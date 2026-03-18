@@ -34,19 +34,33 @@ export async function POST(req: Request) {
     }
 
     // HeyGen has a strict 5000 character limit per input, regardless of plan limits. 
-    // We must shard the script into sequential scenes to prevent API rejection.
+    // We must mathematically shard the script into sequential scenes to prevent API rejection.
+    const MAX_CHUNK_SIZE = 4500;
     const chunks: string[] = [];
-    let currentChunk = "";
-    const paragraphs = script.split('\n');
-    for (const p of paragraphs) {
-      if (currentChunk.length + p.length > 4500) {
-         if (currentChunk) chunks.push(currentChunk);
-         currentChunk = p;
-      } else {
-         currentChunk += (currentChunk ? '\n' : '') + p;
+    let remaining = script.trim();
+    
+    while (remaining.length > 0) {
+      if (remaining.length <= MAX_CHUNK_SIZE) {
+        chunks.push(remaining);
+        break;
       }
+      
+      // Find the last natural punctuation break within the character limit to avoid cutting off words
+      let breakPoint = remaining.lastIndexOf('. ', MAX_CHUNK_SIZE);
+      if (breakPoint === -1) breakPoint = remaining.lastIndexOf('? ', MAX_CHUNK_SIZE);
+      if (breakPoint === -1) breakPoint = remaining.lastIndexOf('! ', MAX_CHUNK_SIZE);
+      if (breakPoint === -1) breakPoint = remaining.lastIndexOf('\n', MAX_CHUNK_SIZE);
+      
+      // If no natural sentence break exists (e.g. impossible monolithic block), force a hard cut
+      if (breakPoint === -1 || breakPoint === 0) {
+        breakPoint = MAX_CHUNK_SIZE;
+      } else {
+        breakPoint += 1; // Include the punctuation mark in the chunk
+      }
+      
+      chunks.push(remaining.substring(0, breakPoint).trim());
+      remaining = remaining.substring(breakPoint).trim();
     }
-    if (currentChunk) chunks.push(currentChunk);
 
     const video_inputs = chunks.filter(c => c.trim().length > 0).map(chunk => {
       const input: any = {
