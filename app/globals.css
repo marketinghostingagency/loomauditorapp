@@ -1,26 +1,83 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #222222; /* MHA Dark background */
+    --foreground: #f8fafc; /* Keep text light */
+    --card: #333333; /* Dark gray card */
+    --card-foreground: #f8fafc;
+    --primary: #f5ed38; /* MHA Yellow */
+    --primary-foreground: #111111; /* Dark text on yellow */
+    --secondary: #464646; /* MHA Dark-dark gray */
+    --secondary-foreground: #f5ed38;
+    --border: #464646;
+    --input: #333333;
+    --ring: #dc9f0f; /* MHA Dark yellow */
+    --radius: 0.75rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    /* Use MHA subtle gradients */
+    background-image: radial-gradient(circle at 15% 50%, rgba(245, 237, 56, 0.05), transparent 25%),
+                      radial-gradient(circle at 85% 30%, rgba(220, 159, 15, 0.05), transparent 25%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(51, 51, 51, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .glass-card {
+    background: rgba(51, 51, 51, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-gradient {
+    /* MHA Gradient: Yellow to Dark Yellow */
+    background: linear-gradient(to right, #f5ed38, #dc9f0f);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .animate-blob {
+    animation: blob 7s infinite;
+  }
+  
+  .animation-delay-2000 {
+    animation-delay: 2s;
+  }
+  
+  .animation-delay-4000 {
+    animation-delay: 4s;
+  }
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
 }
