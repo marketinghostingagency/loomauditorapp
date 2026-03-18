@@ -6,6 +6,27 @@ export default function AuditResults({ result }: { result: any }) {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string>('');
   const [isCopied, setIsCopied] = useState(false);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
+
+  const copyShareLink = async () => {
+    if (!videoUrl) return;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(videoUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = videoUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      setIsLinkCopied(true);
+      setTimeout(() => setIsLinkCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy link', err);
+    }
+  };
 
   const copyScript = async () => {
     try {
@@ -153,7 +174,7 @@ export default function AuditResults({ result }: { result: any }) {
             {videoError && <p className="text-red-400 text-sm mt-2 font-medium">{videoError}</p>}
           </div>
         ) : (
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 space-y-6">
             <div className="aspect-video w-full max-w-2xl mx-auto rounded-xl overflow-hidden bg-black border border-[#464646]">
               <video 
                 src={videoUrl} 
@@ -162,13 +183,29 @@ export default function AuditResults({ result }: { result: any }) {
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex justify-center">
+            
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+              <div className="flex items-center w-full max-w-md bg-[#222222] border border-[#464646] rounded-lg overflow-hidden shrink-[2]">
+                <input 
+                  type="text" 
+                  readOnly 
+                  value={videoUrl} 
+                  className="bg-transparent text-slate-300 text-sm px-4 py-3 flex-1 outline-none w-full"
+                />
+                <button 
+                  onClick={copyShareLink}
+                  className="bg-[#333333] hover:bg-[#464646] text-[#f5ed38] px-4 py-3 border-l border-[#464646] transition-colors flex items-center justify-center min-w-[120px] text-sm font-medium"
+                >
+                  {isLinkCopied ? "Copied!" : "Copy Link"}
+                </button>
+              </div>
+
               <a 
                 href={videoUrl} 
                 download="heygen_outreach.mp4"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#f5ed38] hover:bg-[#dc9f0f] text-black font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2"
+                className="bg-[#f5ed38] hover:bg-[#dc9f0f] text-black font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 w-full md:w-auto whitespace-nowrap shrink-0"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Download MP4
