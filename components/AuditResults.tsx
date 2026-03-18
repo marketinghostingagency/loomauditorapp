@@ -5,6 +5,26 @@ export default function AuditResults({ result }: { result: any }) {
   const [videoStatus, setVideoStatus] = useState<string>('');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string>('');
+  const [isCopied, setIsCopied] = useState(false);
+
+  const copyScript = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(result.script);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = result.script;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy', err);
+    }
+  };
 
   const generateHeyGenVideo = async () => {
     setIsGeneratingVideo(true);
@@ -110,12 +130,12 @@ export default function AuditResults({ result }: { result: any }) {
       <div className="glass-card rounded-2xl p-6 border border-[#464646]">
         <h4 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <svg className="w-6 h-6 text-[#f5ed38]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-          HeyGen Avatar Video
+          Video
         </h4>
         
         {!videoUrl ? (
           <div className="space-y-4">
-            <p className="text-slate-300">Generate a personalized video outreach using your custom AI Avatar and the script below.</p>
+            <p className="text-slate-300">Generate a personalized video from Joel</p>
             <button
               onClick={generateHeyGenVideo}
               disabled={isGeneratingVideo}
@@ -127,7 +147,7 @@ export default function AuditResults({ result }: { result: any }) {
                   {videoStatus}
                 </>
               ) : (
-                'Generate AI Avatar Video'
+                'Generate Video'
               )}
             </button>
             {videoError && <p className="text-red-400 text-sm mt-2 font-medium">{videoError}</p>}
@@ -163,14 +183,18 @@ export default function AuditResults({ result }: { result: any }) {
         <div className="flex items-center justify-between mb-6 pb-6 border-b border-[#464646]">
           <h2 className="text-2xl font-bold text-white flex items-center gap-3">
             <svg className="w-6 h-6 text-[#f5ed38]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
-            Your Loom Script
+            Audit Script
           </h2>
           <button 
-            onClick={() => navigator.clipboard.writeText(result.script)}
+            onClick={copyScript}
             className="text-sm bg-[#333333] hover:bg-[#464646] text-[#f5ed38] py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-[#464646]"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-            Copy Script
+            {isCopied ? (
+              <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            )}
+            {isCopied ? "Copied!" : "Copy Script"}
           </button>
         </div>
         
