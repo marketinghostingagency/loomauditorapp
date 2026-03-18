@@ -59,9 +59,9 @@ export default function Home() {
         <div className="w-full max-w-2xl flex flex-col items-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="text-center space-y-4">
             <h2 className="text-4xl md:text-6xl font-black tracking-tight drop-shadow-sm">
-              Automate Your
+              Joel's
               <br/>
-              <span className="text-gradient">Video Audits</span>
+              <span className="text-gradient">Audits</span>
             </h2>
             <p className="text-lg text-slate-400 max-w-lg mx-auto leading-relaxed">
               Enter a prospect's website URL below. The AI will analyze their CRO and Marketing Tech to instantly generate a personalized Loom script tailored to Joel Otten's exact style.
