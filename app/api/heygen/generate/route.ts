@@ -33,30 +33,47 @@ export async function POST(req: Request) {
       }
     }
 
-    const payload: any = {
-      video_inputs: [
-        {
-          character: {
-            type: "avatar",
-            avatar_id: AVATAR_ID,
-            avatar_style: "normal",
-            scale: 0.3, // Shrink avatar to act like a Loom Bubble
-            position: { x: -0.3, y: -0.3 } // Move it to the bottom-left corner
-          },
-          voice: {
-            type: "text",
-            input_text: script,
-            voice_id: VOICE_ID || "d102af5d6c144a9a9926394a05d527ee"
-          }
+    // HeyGen has a strict 5000 character limit per input, regardless of plan limits. 
+    // We must shard the script into sequential scenes to prevent API rejection.
+    const chunks: string[] = [];
+    let currentChunk = "";
+    const paragraphs = script.split('\n');
+    for (const p of paragraphs) {
+      if (currentChunk.length + p.length > 4500) {
+         if (currentChunk) chunks.push(currentChunk);
+         currentChunk = p;
+      } else {
+         currentChunk += (currentChunk ? '\n' : '') + p;
+      }
+    }
+    if (currentChunk) chunks.push(currentChunk);
+
+    const video_inputs = chunks.filter(c => c.trim().length > 0).map(chunk => {
+      const input: any = {
+        character: {
+          type: "avatar",
+          avatar_id: AVATAR_ID,
+          avatar_style: "normal",
+          scale: 0.3, // Shrink avatar to act like a Loom Bubble
+          position: { x: -0.3, y: -0.3 } // Move it to the bottom-left corner
+        },
+        voice: {
+          type: "text",
+          input_text: chunk.trim(),
+          voice_id: VOICE_ID || "d102af5d6c144a9a9926394a05d527ee"
         }
-      ],
+      };
+      
+      if (backgroundObj) {
+        input.background = backgroundObj;
+      }
+      return input;
+    });
+
+    const payload: any = {
+      video_inputs: video_inputs,
       test: false
     };
-
-    // Attach the website screenshot to the background if successfully generated
-    if (backgroundObj) {
-      payload.video_inputs[0].background = backgroundObj;
-    }
 
     const response = await fetch('https://api.heygen.com/v2/video/generate', {
       method: 'POST',
