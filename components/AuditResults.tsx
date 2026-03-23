@@ -58,7 +58,7 @@ export default function AuditResults({ result }: { result: any }) {
       const res = await fetch('/api/growth-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: result.url, brand: result.brandName || result.url })
+        body: JSON.stringify({ url: result.url, brand: result.brandName || result.url, auditId: result.auditId })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to generate growth audit');

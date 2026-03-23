@@ -1,0 +1,20 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Audit {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+  url               String
+  brandName         String
+  apexDomain        String?
+  metaPixelFound    Boolean  @default(false)
+  script            String
+  sitemapXml        String?
+  affiliatePrograms String?  // JSON stringified array representing found programs
+  aiAnalysis        String?
+}

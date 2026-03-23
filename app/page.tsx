@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AuditResults from '@/components/AuditResults';
+import Link from 'next/link';
 
 export default function Home() {
   const [url, setUrl] = useState('');
@@ -53,7 +54,19 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-4xl mx-auto">
+    <>
+      {/* Admin Login Button */}
+      <div className="fixed top-6 right-6 z-50 animate-in fade-in duration-1000">
+        <Link 
+          href="/admin" 
+          className="text-slate-400 hover:text-[#f5ed38] text-sm font-bold transition-all flex items-center gap-2 bg-[#111111]/80 px-5 py-2.5 rounded-full border border-[#464646] hover:border-[#f5ed38]/50 shadow-lg backdrop-blur-md"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          Admin Login
+        </Link>
+      </div>
+
+      <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-4xl mx-auto mt-12 md:mt-0">
       
       {!result ? (
         <div className="w-full max-w-2xl flex flex-col items-center space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -136,5 +149,6 @@ export default function Home() {
       )}
 
     </div>
+    </>
   );
 }

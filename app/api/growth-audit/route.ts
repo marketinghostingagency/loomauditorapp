@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import Anthropic from '@anthropic-ai/sdk';
+import { prisma } from '../../../lib/prisma';
 
 const GROWTH_AUDIT_PROMPT = `You are a Principal Growth Marketer specializing in E-commerce scaling. You are performing an in-depth Growth Audit for {BRAND} ({URL}).
 
@@ -28,7 +29,7 @@ Extracted Content:
 
 export async function POST(req: Request) {
   try {
-    const { url, brand } = await req.json();
+    const { url, brand, auditId } = await req.json();
 
     if (!url || !brand) {
       return NextResponse.json({ error: 'URL and Brand Name are required' }, { status: 400 });
@@ -117,6 +118,21 @@ export async function POST(req: Request) {
         });
 
         analysisResult = message.content[0].type === 'text' ? message.content[0].text : "";
+    }
+
+    if (auditId) {
+      try {
+        await prisma.audit.update({
+          where: { id: auditId },
+          data: {
+             sitemapXml: Buffer.from(sitemapXml).toString('base64'),
+             affiliatePrograms: JSON.stringify(affiliateProgramsFound),
+             aiAnalysis: analysisResult
+          }
+        });
+      } catch (e) {
+        console.warn('Could not update audit ID:', auditId, e);
+      }
     }
 
     return NextResponse.json({

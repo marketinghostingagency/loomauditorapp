@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import Anthropic from '@anthropic-ai/sdk';
+import { prisma } from '../../../lib/prisma';
 
 // Basic prompt crafted from your specific Loom examples
 const AUDIT_PROMPT = `You are Joel Otten, VP of Performance Branding, E-Commerce, and Growth at Marketing Hosting Agency. You have been in marketing for 15 years, and E-Commerce specifically for the past decade. You have worked with brands from startup to $100M+ companies, including names like the FasciaBlaster by Ashley Black, Pourri the makers of Poo~Pourri and Omi well beauty a Kardashian backed hair growth peptide brand.
@@ -152,8 +153,19 @@ export async function POST(req: Request) {
       script = message.content[0].type === 'text' ? message.content[0].text : "";
     }
 
-    // 5. Return the results
+    // 5. Save to Prisma & Return the results
+    const auditRecord = await prisma.audit.create({
+      data: {
+        url,
+        brandName,
+        apexDomain,
+        metaPixelFound,
+        script
+      }
+    });
+
     return NextResponse.json({
+      auditId: auditRecord.id,
       url,
       brandName,
       apexDomain,
