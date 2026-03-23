@@ -8,6 +8,10 @@ export default function AuditResults({ result }: { result: any }) {
   const [isCopied, setIsCopied] = useState(false);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
 
+  const [isGeneratingGrowth, setIsGeneratingGrowth] = useState(false);
+  const [growthResult, setGrowthResult] = useState<any>(null);
+  const [growthError, setGrowthError] = useState<string>('');
+
   const copyShareLink = async () => {
     if (!videoUrl) return;
     try {
@@ -44,6 +48,25 @@ export default function AuditResults({ result }: { result: any }) {
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy', err);
+    }
+  };
+
+  const generateGrowthAudit = async () => {
+    setIsGeneratingGrowth(true);
+    setGrowthError('');
+    try {
+      const res = await fetch('/api/growth-audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: result.url, brand: result.brandName || result.url })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to generate growth audit');
+      setGrowthResult(data);
+    } catch (e: any) {
+      setGrowthError(e.message);
+    } finally {
+      setIsGeneratingGrowth(false);
     }
   };
 
@@ -243,6 +266,86 @@ export default function AuditResults({ result }: { result: any }) {
             {result.script}
           </div>
         </div>
+      </div>
+
+      {/* Growth Audit Section */}
+      <div className="glass-card rounded-2xl p-8 shadow-xl border border-[#464646] mt-8 bg-gradient-to-b from-[#111111] to-[#0a0a0a]">
+        <div className="flex flex-col mb-6 pb-6 border-b border-[#464646]">
+          <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400 flex items-center gap-3">
+            <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            In-Depth Growth Audit
+          </h2>
+          <p className="text-slate-400 text-sm mt-2">Deep dive analysis of SEO, Sitemaps, Affiliate checks, and Ads Optimization strategy.</p>
+        </div>
+
+        {!growthResult ? (
+          <div className="space-y-4">
+            <button
+              onClick={generateGrowthAudit}
+              disabled={isGeneratingGrowth}
+              className="bg-gradient-to-r from-emerald-500 to-cyan-600 hover:from-emerald-600 hover:to-cyan-700 text-white font-bold py-4 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 w-full md:w-auto mt-4"
+            >
+              {isGeneratingGrowth ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  Analyzing Growth Trajectory...
+                </>
+              ) : (
+                'Generate Growth Audit'
+              )}
+            </button>
+            {growthError && <p className="text-red-400 text-sm mt-2 font-medium">{growthError}</p>}
+          </div>
+        ) : (
+          <div className="space-y-8 mt-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Affiliate & Sitemap Bar */}
+            <div className="flex flex-col md:flex-row gap-4">
+               <div className="flex-1 bg-black/40 border border-[#464646] rounded-xl p-6">
+                 <h4 className="font-bold text-white mb-3 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Affiliate Marketing
+                 </h4>
+                 {growthResult.affiliatePrograms && growthResult.affiliatePrograms.length > 0 ? (
+                   <div className="flex gap-2 flex-wrap">
+                     {growthResult.affiliatePrograms.map((p: string) => (
+                       <span key={p} className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 text-sm font-semibold rounded-lg border border-emerald-500/30 capitalize">
+                         {p} Found
+                       </span>
+                     ))}
+                   </div>
+                 ) : (
+                   <div className="flex items-start gap-3 text-slate-400 text-sm">
+                     <span className="shrink-0 p-1.5 bg-red-500/10 rounded-lg text-red-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                     </span>
+                     <p>No standard affiliate footprint found on the homepage. Establishing a partner program could be a massive growth opportunity to leverage creator networks.</p>
+                   </div>
+                 )}
+               </div>
+
+               <div className="flex-1 bg-black/40 border border-[#464646] rounded-xl p-6 flex flex-col items-start justify-center relative overflow-hidden">
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl transform translate-x-10 -translate-y-10"></div>
+                 <h4 className="font-bold text-white mb-3">Technical SEO & Routing</h4>
+                 <p className="text-slate-400 text-sm mb-4">We've crawled the site structure and generated a standardized XML Sitemap ready for Google Search Console.</p>
+                 <a 
+                   href={`data:text/xml;base64,${growthResult.sitemapXml}`} 
+                   download={`${result.brandName || 'brand'}-sitemap.xml`}
+                   className="bg-[#222222] hover:bg-[#333333] text-cyan-400 px-5 py-2.5 rounded-lg text-sm font-bold border border-cyan-500/30 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(34,211,238,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.2)]"
+                 >
+                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                   Download Sitemap (.xml)
+                 </a>
+               </div>
+            </div>
+
+            {/* AI Analysis */}
+            <div className="bg-black/40 border border-[#464646] rounded-xl p-8 prose prose-invert max-w-none prose-h2:text-emerald-400 prose-h2:text-xl prose-h2:border-b prose-h2:border-[#464646] prose-h2:pb-4 prose-h3:text-cyan-400 prose-li:text-slate-300">
+              <div className="text-lg leading-relaxed text-slate-200 whitespace-pre-wrap font-medium">
+                {growthResult.aiAnalysis}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>
