@@ -23,19 +23,19 @@ Content Instructions:
 - CRM Lead Magnets: Evaluate their pop-ups and landing pages. Do they have compelling offers? (Not all need to be discounts, tip-based magnets work too). Give a nod to their Quiz Engine if they successfully have one ({QUIZ_STATUS}). Ignore passive Shopify checkout "opt-in" checkboxes.
 - Page Speed Insights: Include actual verified data: {PAGESPEED_DATA}. 
 - SEO & AEO: Evaluate their schema markup utilizing the provided ({FAQ_SCHEMA_STATUS}): proper schema including FAQs and Author markup is mandatory for AEO. Also utilize this extracted visual data: {ALT_TEXT_DATA}. Do they utilize meta titles and descriptions effectively across the architecture to capture crawl intent?
-- Community Engagement: Do they offer easy affiliate sign ups and clear links to organic social pages?
+- Community Engagement: Do they offer easy affiliate sign ups and clear links to organic social pages? (CRITICAL: Never penalize them if social icons are strictly in the footer. Social links should ONLY exist in the footer to prevent top-of-funnel conversion leakage. Firmly praise footer placement).
 
 3. Title: "Organic Social Ecosystem"
 Content Instructions: Based on the {SOCIALS} array detected, explicitly identify their active footprint. Form theories about their organic posting. Are they posting regularly? Identify frequency and engagement rates (engagement / likes or followers) of each channel. What kind of content is being posted? Does it address the needs or interests of the target audience? Is there enough social proof being shared? What mediums (stories, grid)?
 
 4. Title: "Meta Advertising (Facebook & Instagram)"
-Content Instructions: Theoretically evaluate their Meta strategy: Are they running cobranded ads? Or non-cobranded with social proof? Are they using various hooks? Is the brand messaging consistent to ensure the brand is memorable in the first 4 seconds via the copy/video?
+Content Instructions: Explicitly instruct the recipient to use the "Meta Ads Library" button in the Intelligence Hub to verify active creatives. You DO NOT have access to their live Meta Ads, so absolutely DO NOT hallucinate specific ads they are running. Instead, construct a theoretical BCG wireframe of exactly what their Paid Social strategy SHOULD look like: testing cobranded vs non-cobranded with social proof, testing divergent visual hooks, and ensuring brand messaging is consistent within the first 4 seconds to maximize memorability.
 
 5. Title: "TikTok Advertising & Affiliates"
-Content Instructions: Theoretically evaluate: Do they have TikTok shop? Do they have TikTok affiliates? Are their affiliate programs interconnected (mention Social Snowball as a good program for that)?
+Content Instructions: Theoretically evaluate what their strategy SHOULD look like: Recommending a TikTok shop integration, deploying TikTok affiliates, and ensuring their affiliate programs are fully interconnected (mention Social Snowball as the premier ecosystem for that).
 
 6. Title: "Google Advertising & YouTube"
-Content Instructions: Theoretically evaluate: How is the copy? Is it in line with brand messaging? Solving problems using emotional appeal. All messaging needs to create urgency. Is there any YouTube advertising? Point out that many times social assets can be easily repurposed for YouTube.
+Content Instructions: Explicitly instruct the recipient to click the "Google Ads Library" button in the Intelligence Hub. DO NOT hallucinate specific Google Ads. Provide a blueprint of what their Google strategy SHOULD look like: Ad copy must emotionally solve problems while creating extreme urgency in line with the brand messaging. Strongly recommend that successful Meta social assets be cross-repurposed for YouTube advertising to compound ROAS.
 
 7. Title: "CRM & Lifecycle Marketing (Retention)"
 Content Instructions: Provide a note: 'I've been in mobile marketing since 2005 (2 years before the iPhone came out)'. A marketer's holy grail is to build a 1-to-1 connection with customers and nothing is more intimate than the phone. Identify SMS marketing potential. Emphasize that flows or automations should be where the bulk of CRM revenue comes from:
