@@ -8,11 +8,11 @@ export default function AuditResults({ result }: { result: any }) {
 
   const downloadSitemap = () => {
     if (!result.sitemapXml) return;
-    const blob = new Blob([atob(result.sitemapXml)], { type: 'application/xml' });
+    const blob = new Blob([atob(result.sitemapXml)], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sitemap-${result.brandName || 'audit'}.xml`;
+    a.download = `seo-meta-${result.brandName || 'audit'}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -102,10 +102,10 @@ export default function AuditResults({ result }: { result: any }) {
                </a>
             ))}
 
-            {/* Sitemap */}
+            {/* Sitemap/CSV */}
             {result.sitemapXml && (
               <button onClick={downloadSitemap} className="bg-[#222] hover:bg-[#333] text-blue-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-blue-500/30">
-                Download Sitemap XML
+                Download SEO Meta (CSV)
               </button>
             )}
 

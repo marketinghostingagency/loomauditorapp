@@ -190,7 +190,7 @@ export async function POST(req: Request) {
     if ($landing && !hasFaqSchema) {
         $landing('script[type="application/ld+json"]').each((_, el) => {
             const text = $landing(el).html();
-            if (text && text.includes('FAQPage')) hasFfaqSchema = true;
+            if (text && text.includes('FAQPage')) hasFaqSchema = true;
         });
     }
     const faqStatus = hasFaqSchema ? "Yes, FAQPage schema.org markup detected" : "No FAQPage schema.org markup detected";
