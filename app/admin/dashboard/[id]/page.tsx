@@ -18,8 +18,10 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
   }
 
   let affiliatePrograms: string[] = [];
+  let socialLinks: {name: string, url: string}[] = [];
   try {
-     affiliatePrograms = audit.affiliatePrograms ? JSON.parse(audit.affiliatePrograms) : [];
+     if (audit.affiliatePrograms) affiliatePrograms = JSON.parse(audit.affiliatePrograms);
+     if (audit.socialLinks) socialLinks = JSON.parse(audit.socialLinks);
   } catch(e) {}
 
   return (
@@ -74,9 +76,30 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
               </a>
               
               {/* PageSpeed */}
-              <a href={`https://pagespeed.web.dev/report?url=${encodeURIComponent(audit.url)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-green-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-green-500/30">
-                PageSpeed: Homepage
-              </a>
+              {audit.url && (
+                <a href={`https://pagespeed.web.dev/report?url=${encodeURIComponent(audit.url)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-green-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-green-500/30">
+                  PageSpeed: Homepage
+                </a>
+              )}
+              {audit.landingPageUrl && (
+                <a href={`https://pagespeed.web.dev/report?url=${encodeURIComponent(audit.landingPageUrl)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-green-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-green-500/30">
+                  PageSpeed: Landing Page
+                </a>
+              )}
+
+              {/* Social Links Outbound */}
+              {socialLinks && socialLinks.map((social: { name: string, url: string }) => (
+                 <a key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-slate-200 font-medium py-2 px-4 rounded-lg flex items-center justify-center border border-[#464646] transition-colors shadow-sm">
+                   {social.name} Profile
+                 </a>
+              ))}
+
+              {/* Sitemap */}
+              {audit.sitemapXml && (
+                <a href={`data:application/xml;base64,${audit.sitemapXml}`} download={`sitemap-${audit.brandName}.xml`} className="bg-[#222] hover:bg-[#333] text-blue-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-blue-500/30">
+                  Download Sitemap XML
+                </a>
+              )}
 
               {/* Affiliate */}
               {affiliatePrograms && affiliatePrograms.length > 0 ? (

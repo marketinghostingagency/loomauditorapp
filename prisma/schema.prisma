@@ -17,6 +17,8 @@ model Audit {
   script            String?
   sitemapXml        String?
   affiliatePrograms String?  // JSON stringified array representing found programs
+  landingPageUrl    String?
+  socialLinks       String?  // JSON stringified array of social profiles
   aiAnalysis        String?
 }
 

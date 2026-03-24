@@ -10,7 +10,7 @@ I will provide you with the scraped text content from their homepage and landing
 CRITICAL FORMATTING INSTRUCTIONS (XML STRUCTURE & RAW HTML CONTENT):
 You must strictly format your response using exactly 8 <section> blocks.
 Each <section> must contain a exactly matched <title> and a <content> tag.
-The inside of the <content> tag MUST be pure, styled HTML. Do NOT use Markdown (absolutely NO asterisks ** or hash symbols #). Use <p>, <strong>, <ul>, and <li> tags. Do NOT make paragraphs too long! Use "Smart Brevity: The Power of Saying More with Less".
+The inside of the <content> tag MUST be pure, styled HTML. Do NOT use Markdown (absolutely NO asterisks ** or hash symbols #). YOU MUST STRICTLY WRAP EVERY SINGLE SENTENCE OR PARAGRAPH IN <p> TAGS. DO NOT OUTPUT RAW FLOATING TEXT. Use <p>, <strong>, <ul>, and <li> tags. Do NOT make paragraphs too long! Use "Smart Brevity: The Power of Saying More with Less".
 
 HYPOTHESIS GENERATION (MANDATORY):
 To ensure elite consulting depth, for every single section EXCEPT the Intro, you MUST conclude the section's <content> with a dedicated unordered list (<ul>) titled "<strong>Hypotheses to Test:</strong>" containing exactly 3 highly specific, concrete A/B testing variations or tactical strategies to execute.
@@ -195,6 +195,8 @@ export async function POST(req: Request) {
         metaPixelFound,
         sitemapXml: Buffer.from(sitemapXml).toString('base64'),
         affiliatePrograms: JSON.stringify(affiliateProgramsFound),
+        landingPageUrl: landingPageUrl || null,
+        socialLinks: JSON.stringify(socialLinks),
         aiAnalysis: analysisResult,
         script: ""
       }
