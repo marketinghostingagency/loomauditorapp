@@ -32,7 +32,7 @@ export default async function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#464646]">
-              {audits.map((audit) => (
+              {audits.map((audit: any) => (
                 <tr key={audit.id} className="hover:bg-white/5 transition-colors group">
                   <td className="p-5 text-sm text-slate-400">
                     {new Date(audit.createdAt).toLocaleDateString()}
