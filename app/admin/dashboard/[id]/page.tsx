@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AuditAccordion from '../../../../components/AuditAccordion';
 import ClientDashboardActions from './ClientDashboardActions';
+import AdminScriptGenerator from './AdminScriptGenerator';
 
 export const dynamic = 'force-dynamic';
 
@@ -119,17 +120,8 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
           </div>
         )}
 
-        {audit.script && (
-          <div className="glass-card rounded-2xl p-8 border border-[#222] shadow-xl">
-            <h2 className="text-[#dc9f0f] font-bold text-2xl flex items-center gap-3 mb-6 pb-4 border-b border-[#464646]/50">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-              Loom Pitch Script
-            </h2>
-            <div className="prose prose-invert max-w-none text-slate-200 text-lg leading-relaxed whitespace-pre-wrap font-medium">
-               {audit.script}
-            </div>
-          </div>
-        )}
+        {/* Secure Admin Loop Script Generator Layer */}
+        <AdminScriptGenerator auditId={audit.id} existingScript={audit.script} />
       </main>
     </div>
   );

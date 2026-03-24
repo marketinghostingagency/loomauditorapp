@@ -14,8 +14,18 @@ model Audit {
   brandName         String
   apexDomain        String?
   metaPixelFound    Boolean  @default(false)
-  script            String
+  script            String?
   sitemapXml        String?
   affiliatePrograms String?  // JSON stringified array representing found programs
   aiAnalysis        String?
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  brandName String?
+  auditId   String?
+  createdAt DateTime @default(now())
 }
