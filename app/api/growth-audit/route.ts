@@ -49,7 +49,7 @@ URL: {URL}
 
 Extracted Website Content:
 {CONTENT}
-\`;
+`;
 
 export async function POST(req: Request) {
   try {
