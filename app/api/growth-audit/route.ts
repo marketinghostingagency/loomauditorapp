@@ -19,10 +19,10 @@ Content Instructions: Is there a tag line consistent across all channels? Is it 
 
 2. Title: "Website Optimization & Technicals"
 Content Instructions: 
-- CRO: Analyze primary CTA colors (there should be strictly 1 dedicated color exclusively for primary conversion actions) and use of Fixed CTAs.
+- CRO: Assess their primary CTA styling. Commend them explicitly if they are retaining a singular CTA color matrix across dynamic variants (Add to bag, buy now). Also, carefully evaluate Fixed CTAs based on page context: ({PAGE_CONTEXT}). 
 - CRM Lead Magnets: Evaluate their pop-ups and landing pages. Do they have compelling offers? (Not all need to be discounts, tip-based magnets work too). Give a nod to their Quiz Engine if they successfully have one ({QUIZ_STATUS}). Ignore passive Shopify checkout "opt-in" checkboxes.
-- Page Speed Insights: Keep this extremely brief. Assume they passed core web vitals and do not dwell on it. 
-- SEO & AEO: Evaluate meta titles and descriptions. Emphasize alt image text containing relevant keywords. Evaluate their schema markup utilizing the provided ({FAQ_SCHEMA_STATUS}): proper schema including FAQs and Author markup is mandatory for AEO. 
+- Page Speed Insights: Include actual verified data: {PAGESPEED_DATA}. 
+- SEO & AEO: Evaluate their schema markup utilizing the provided ({FAQ_SCHEMA_STATUS}): proper schema including FAQs and Author markup is mandatory for AEO. Also utilize this extracted visual data: {ALT_TEXT_DATA}. Do they utilize meta titles and descriptions effectively across the architecture to capture crawl intent?
 - Community Engagement: Do they offer easy affiliate sign ups and clear links to organic social pages?
 
 3. Title: "Organic Social Ecosystem"
@@ -47,8 +47,9 @@ Content Instructions: Provide a note: 'I've been in mobile marketing since 2005 
 Brand: {BRAND}
 URL: {URL}
 
-Extracted Website Content:
+Extracted Website Content & Meta Snippets:
 {CONTENT}
+{SEO_SNIPPET}
 `;
 
 export async function POST(req: Request) {
@@ -120,7 +121,21 @@ export async function POST(req: Request) {
        if (rawBodyText.includes(keyword)) loyaltyFound.push(keyword);
     });
 
-    // 3. Sitemap XML
+    const isPDP = url.includes('/products/') || url.includes('/p/');
+    const isCollection = url.includes('/collections/') || url.includes('/c/');
+    const isHomepage = url === baseUrl || url === baseUrl + '/';
+    const pageContext = isPDP ? "Page is a Product Detail Page (PDP): MUST strongly enforce evaluating a sticky/fixed CTA." : isCollection ? "Page is a Collection Page: General Fixed CTAs are NOT recommended here." : isHomepage ? "Page is Homepage: Fixed CTAs are NOT recommended here." : "General Page: Consider recommending a sticky CTA only if it spans long scrolls.";
+
+    // Image Alt Text Checker
+    let imgCount = 0; let imgWithAltCount = 0; let missingAltCount = 0;
+    $home('img').each((_, el) => {
+        imgCount++;
+        const alt = $home(el).attr('alt');
+        if (alt && alt.trim().length > 0) imgWithAltCount++; else missingAltCount++;
+    });
+    const altTextStr = `Image SEO: Scanned ${imgCount} total images on the page. ${imgWithAltCount} have functional alt text, ${missingAltCount} are missing alt text completely.`;
+
+    // 3. Sitemap & CSV Meta Data Generator
     const internalLinks = new Set<string>();
     internalLinks.add(baseUrl + '/');
 
@@ -138,9 +153,26 @@ export async function POST(req: Request) {
     const quizLink = sitemapUrls.find(link => link.toLowerCase().includes('quiz'));
     const quizStatus = quizLink ? `Active Quiz URL Detected: ${quizLink}` : `No quiz URLs detected`;
 
-    let sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-    sitemapUrls.forEach(link => { sitemapXml += `  <url>\n    <loc>${link}</loc>\n  </url>\n`; });
-    sitemapXml += `</urlset>`;
+    // Spin up concurrent multi-page crawler to map Meta Data
+    const urlsToCrawl = sitemapUrls.slice(0, 20); // Capture the top 20 structural limbs
+    let csvContent = "URL,Meta Title,Meta Description\\n";
+    const crawlResults = await Promise.all(urlsToCrawl.map(async (u) => {
+        try {
+            const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, signal: AbortSignal.timeout(5000) }).catch(() => null);
+            if (!r || !r.ok) return `"${u}","Access Blocked","Access Blocked"\\n`;
+            const html = await r.text();
+            const $u = cheerio.load(html);
+            let title = $u('title').text()?.replace(/"/g, '""')?.trim() || "Missing Title";
+            let desc = $u('meta[name="description"]').attr('content')?.replace(/"/g, '""')?.trim() || "Missing Description";
+            return `"${u}","${title}","${desc}"\\n`;
+        } catch (e) {
+            return `"${u}","Error","Error"\\n`;
+        }
+    }));
+    csvContent += crawlResults.join('');
+    
+    let seoSnippet = "Top Site Infrastructure Meta Mappings:\\n";
+    crawlResults.slice(0, 5).forEach(res => seoSnippet += res);
 
     // 4. Technical checks (Pixel, Shopify, Schema)
     const checkPixel = (htmlSource: string) => {
@@ -158,7 +190,7 @@ export async function POST(req: Request) {
     if ($landing && !hasFaqSchema) {
         $landing('script[type="application/ld+json"]').each((_, el) => {
             const text = $landing(el).html();
-            if (text && text.includes('FAQPage')) hasFaqSchema = true;
+            if (text && text.includes('FAQPage')) hasFfaqSchema = true;
         });
     }
     const faqStatus = hasFaqSchema ? "Yes, FAQPage schema.org markup detected" : "No FAQPage schema.org markup detected";
@@ -166,12 +198,27 @@ export async function POST(req: Request) {
     // 5. Content Extraction
     $home('script, style, nav, footer, noscript').remove();
     let textContent = $home('body').text().replace(/\s+/g, ' ').trim().substring(0, 3000);
+    // Strip empty JS countdown timers to prevent LLM hallucinations
+    textContent = textContent.replace(/0 days 0 hrs 0 mins 0 secs/gi, ''); 
 
     if ($landing) {
         $landing('script, style, nav, footer, noscript').remove();
-        textContent += "\n\n--- LANDING PAGE CONTENT ---\n\n" + $landing('body').text().replace(/\s+/g, ' ').trim().substring(0, 3000);
+        let landingText = $landing('body').text().replace(/\s+/g, ' ').trim().substring(0, 3000);
+        landingText = landingText.replace(/0 days 0 hrs 0 mins 0 secs/gi, '');
+        textContent += "\n\n--- LANDING PAGE CONTENT ---\n\n" + landingText;
     }
 
+    // Google PageSpeed Insights REST API Call
+    let pageSpeedStr = "Google PageSpeed APIs timed out or rate-limited. Omit explicit performance score metrics.";
+    try {
+        const psRes = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?strategy=mobile&url=${encodeURIComponent(targetUrl)}`, { signal: AbortSignal.timeout(6000) }).catch(() => null);
+        if (psRes && psRes.ok) {
+            const psData = await psRes.json();
+            const score = psData.lighthouseResult?.categories?.performance?.score;
+            if (score) pageSpeedStr = `Live Google PageSpeed REST API returned a Mobile Performance Score of ${Math.round(score * 100)}/100.`;
+        }
+    } catch(e) {}
+    
     let analysisResult = "";
     if (!process.env.ANTHROPIC_API_KEY) {
         analysisResult = JSON.stringify([{ title: "Error", content: "<p>LLM API Key missing. Growth analysis could not be generated.</p>" }]);
@@ -183,6 +230,10 @@ export async function POST(req: Request) {
             .replace('{LOYALTY}', loyaltyFound.length > 0 ? loyaltyFound.join(', ') : 'No exact keywords matching rewards/loyalty/warranty found')
             .replace('{CONTENT}', textContent)
             .replace('{QUIZ_STATUS}', quizStatus)
+            .replace('{PAGE_CONTEXT}', pageContext)
+            .replace('{ALT_TEXT_DATA}', altTextStr)
+            .replace('{PAGESPEED_DATA}', pageSpeedStr)
+            .replace('{SEO_SNIPPET}', seoSnippet)
             .replace('{FAQ_SCHEMA_STATUS}', faqStatus);
 
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -231,7 +282,7 @@ export async function POST(req: Request) {
         brandName,
         apexDomain,
         metaPixelFound,
-        sitemapXml: Buffer.from(sitemapXml).toString('base64'),
+        sitemapXml: Buffer.from(csvContent).toString('base64'),
         affiliatePrograms: JSON.stringify(affiliateProgramsFound),
         landingPageUrl: landingPageUrl || null,
         socialLinks: JSON.stringify(socialLinks),
@@ -243,7 +294,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
         auditId: auditRecord.id,
         affiliatePrograms: affiliateProgramsFound,
-        sitemapXml: Buffer.from(sitemapXml).toString('base64'),
+        sitemapXml: Buffer.from(csvContent).toString('base64'),
         aiAnalysis: analysisResult,
         metaPixelFound,
         isShopify,
