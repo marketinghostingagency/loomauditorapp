@@ -177,7 +177,11 @@ export async function POST(req: Request) {
         while ((match = sectionRegex.exec(rawAnswer)) !== null) {
            const rawMarkdown = match[2].trim();
            // Compile raw Markdown from Claude firmly into safe HTML syntax before shipping to the client UI
-           const contentHtml = await marked.parse(rawMarkdown);
+           const contentHtml = (await marked.parse(rawMarkdown))
+                .replace(/<p>/g, '<p style="margin-bottom: 1.5rem;">')
+                .replace(/<ul>/g, '<ul style="margin-top: 1rem; margin-bottom: 1rem; padding-left: 1.5rem; list-style-type: disc;">')
+                .replace(/<li>/g, '<li style="margin-bottom: 0.5rem;">')
+                .replace(/<strong>/g, '<strong style="color: #f5ed38;">');
 
            sections.push({
              title: match[1].trim().replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
@@ -186,7 +190,11 @@ export async function POST(req: Request) {
         }
         
         if (sections.length === 0) {
-           const fallbackHtml = await marked.parse(rawAnswer);
+           const fallbackHtml = (await marked.parse(rawAnswer))
+                .replace(/<p>/g, '<p style="margin-bottom: 1.5rem;">')
+                .replace(/<ul>/g, '<ul style="margin-top: 1rem; margin-bottom: 1rem; padding-left: 1.5rem; list-style-type: disc;">')
+                .replace(/<li>/g, '<li style="margin-bottom: 0.5rem;">')
+                .replace(/<strong>/g, '<strong style="color: #f5ed38;">');
            sections.push({ title: "Analysis Summary", content: fallbackHtml });
         }
 

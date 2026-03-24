@@ -41,6 +41,20 @@ export default function AuditResults({ result }: { result: any }) {
   return (
     <div className="mt-8 space-y-6 animate-fade-in pb-12">
       
+      {/* Front-End Mirrors Admin Header */}
+      <header className="mb-12">
+        <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+          Audit Insight: <span className="text-[#f5ed38]">{result.brandName || result.apexDomain}</span>
+        </h1>
+        <div className="flex items-center gap-4 text-slate-400 font-medium">
+          <a href={result.url} target="_blank" rel="noopener noreferrer" className="hover:text-[#dc9f0f] transition-colors flex items-center gap-1">
+            {result.apexDomain}
+          </a>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#464646]"></span>
+          <span>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+        </div>
+      </header>
+
       {/* Dynamic Research Hub & Ad Library Quick Links */}
       {(result.brandName || result.apexDomain) && (
         <div className="glass-card rounded-2xl p-6 flex flex-col gap-4 border border-[#464646]">
