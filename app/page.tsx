@@ -66,7 +66,7 @@ export default function Home() {
               <span className="text-gradient">Audits</span>
             </h2>
             <p className="text-lg text-slate-400 max-w-lg mx-auto leading-relaxed">
-              Enter a prospect's brand name, website URL, and primary landing page URL below. Joel will analyze their CRO and Marketing Tech to instantly generate a personalized report as a script and a video of Joel presenting the report.
+              Enter a prospect's brand name and URL below. The MHA Intelligence Engine will rigorously audit their Mobile CRO, SEO architecture, Affiliate networks, and Paid Lifecycle flows to instantly architect an elite, board-level Omnichannel Growth Strategy.
             </p>
           </div>
 
