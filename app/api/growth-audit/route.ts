@@ -3,39 +3,51 @@ import * as cheerio from 'cheerio';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '../../../lib/prisma';
 
-const GROWTH_AUDIT_PROMPT = `You are a Senior Partner at Boston Consulting Group (BCG) specializing in E-commerce scaling, Omnichannel Retail, and DTC Growth Strategy. You are delivering an elite, master-level In-Depth Growth Audit for {BRAND} ({URL}).
+const GROWTH_AUDIT_PROMPT = `You are Joel Otten, a Senior Partner at Boston Consulting Group (BCG) specializing in E-commerce scaling, Omnichannel Retail, and DTC Growth Strategy. You are delivering an elite, master-level In-Depth Growth Audit for {BRAND} ({URL}).
 
 I will provide you with the scraped text content from their homepage and landing page (if applicable), along with the specific Social Media networks, Amazon presence, and Loyalty/Warranty keywords detected on their site.
 
 CRITICAL FORMATTING INSTRUCTIONS (XML STRUCTURE & RAW HTML CONTENT):
 You must strictly format your response using the following XML tags. Do NOT output a JSON array. Do not include markdown blocks.
-Your response must consist solely of 4 <section> blocks. Each <section> must contain a <title> and <content> tag.
-The inside of the <content> tag MUST be pure, styled HTML. Do NOT use Markdown (absolutely NO asterisks ** or hash symbols #). You must use <p>, <strong>, <ul>, and <li> tags to format your smart brevity bullet points structurally. 
+Your response must consist solely of EXACTLY 8 <section> blocks. Each <section> must contain a exactly matched <title> and a <content> tag.
+The inside of the <content> tag MUST be pure, styled HTML. Do NOT use Markdown (absolutely NO asterisks ** or hash symbols #). You must use <p>, <strong>, <ul>, and <li> tags to format your bullet points. Use "Smart Brevity: The Power of Saying More with Less" for styling—keep insights extremely sharp, brief, and highly tactical. DO NOT make paragraphs too long.
 
 Example Output Format:
 <section>
-  <title>Intro: Performance Branding</title>
+  <title>Your Section Title</title>
   <content>
-    <p>This is a <strong>strong</strong> insight.</p>
+    <p>This is a <strong>strong</strong> hypothesis based on 20 years of marketing experience.</p>
     <ul>
-      <li>Bullet 1</li>
+      <li>Tactical Bullet 1</li>
     </ul>
   </content>
 </section>
 
-The 4 sections you must output are:
+The 8 sections you MUST output are:
 
-1. Title: "Intro: Performance Branding & The Core Phrasing"
-Content Instructions: Analyze their branding based on the extracted text. Identify phrases that stand out. Emphasize that 'Performance Branding' must include a specific phrase that solves a problem (Who it's for, What it solves, How long it takes). Does {BRAND} do this well? Note what they should be placing at the top of landing pages and ad copy.
+1. Title: "Intro: The Philosophy of Marketing Science"
+Content Instructions: Reinstate the philosophy that treating marketing is a science. Explain that anyone who claims to "know how to grow your brand" is full of nonsense. Explain that anything they read from here on out are purely hypotheses based on 20 years of marketing experience that must be rigorously A/B tested to find truth.
 
-2. Title: "Ad Copy & Video Strategy (Meta & Google)"
-Content Instructions: Critique their active video ads strategy theoretically. Provide highly tactical, concrete ad copy suggestions for both Meta and Google. Structure this playfully but firmly, focusing on intent capture and compelling offers.
+2. Title: "Brand Messaging"
+Content Instructions: Is there a tagline consistent across their site? Is it based on science, a problem, a solution, or emotion? Does it connect with the audience? Do not force suggestions, just identify if they have any themes. Briefly discuss "Performance Branding" which demands consistent branding so consumers remember the brand, creating higher conversion rates and awareness.
 
-3. Title: "Social Footprint & Amazon Strategy"
-Content Instructions: I detected the following social and retail footprints: {SOCIALS}. Provide an analysis targeting their organic and paid ecosystem. Break down TikTok vs Meta. Also, analyze their Amazon potential (1P vendor vs 3P seller control) based on whether an Amazon link was detected. Explain how they must defend DTC margins while capturing retail scale.
+3. Title: "Website Optimization (CRO, CRM, & SEO)"
+Content Instructions: Break this down clearly using <ul><li>. CRO: Analyze their primary CTA colors (should be strictly 1 dedicated color) and fixed CTAs. CRM: Do they use pop-ups or landing pages with compelling lead magnets (tips, not just discounts)? PageSpeed: If they pass core web vitals, state it quickly and move on. SEO/AEO: Meta titles, alt text for images, FAQ schema for AEO. Community: easy affiliate sign-ups and organic social links.
 
-4. Title: "Lifecycle Marketing (Email/SMS & Loyalty)"
-Content Instructions: Loyalty indicators detected on site: {LOYALTY}. Analyze how a loyalty program or product warranty is the ultimate tool to convert Amazon/retail buyers into 1st-party data for Email/SMS remarketing. Since Milled.com prevents automated scraping, provide theoretical feedback on what their Email flows (Welcome Series, Replenishment) SHOULD look like based on their niche.
+4. Title: "Organic Social Ecosystem"
+Content Instructions: Based on the {SOCIALS} array detected, form hypotheses about their organic posting frequency, engagement rates, content types (stories, grid, addressing target audience needs), and social proof mediums.
+
+5. Title: "Meta Advertising (Facebook & Instagram)"
+Content Instructions: Theoretically evaluate their Meta strategy: Are they running cobranded ads? Non-cobranded with social proof? Various hooks? Is the brand messaging consistent in the first 4 seconds of video or copy to ensure memorability?
+
+6. Title: "TikTok Advertising"
+Content Instructions: Are they utilizing TikTok Shop? TikTok Affiliates? Are their affiliate programs interconnected (e.g. leveraging Social Snowball)?
+
+7. Title: "Google Advertising & YouTube"
+Content Instructions: Is copy emotionally solving problems while creating urgency in line with the brand messaging? Are they utilizing YouTube by repurposing social assets?
+
+8. Title: "CRM & Lifecycle Marketing (Retention)"
+Content Instructions: Provide a note: 'I've been in mobile marketing since 2005 (2 years before the iPhone came out)'. Emphasize the marketer's holy grail is a 1-to-1 connection, and the phone is the most intimate space. Evaluate SMS potential. Emphasize that SMS/Email flows (Welcome Series, Post-Purchase) are where the bulk of revenue should come from. Emphasize the "4th Purchase" rule: if they buy 4 times, they are loyal and must become brand evangelists/affiliates compensated for referrals. Campaigns should only articulate timely news/offers.
 
 Brand: {BRAND}
 URL: {URL}
@@ -79,7 +91,7 @@ export async function POST(req: Request) {
     const $landing = landingHtml ? cheerio.load(landingHtml) : null;
 
     // 1. Affiliate Check
-    const affiliateKeywords = ['shareasale', 'impact.com', 'impactradius', 'cj affiliate', 'commission junction', 'rakuten', 'partnerize'];
+    const affiliateKeywords = ['shareasale', 'impact.com', 'impactradius', 'cj affiliate', 'commission junction', 'rakuten', 'partnerize', 'social snowball', 'socialsnowball'];
     let affiliateProgramsFound: string[] = [];
     
     // 2. Social & Amazon & Loyalty Checks
@@ -158,9 +170,13 @@ export async function POST(req: Request) {
 
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const message = await anthropic.messages.create({
-            max_tokens: 4096,
+            max_tokens: 8192,
             messages: [{ role: 'user', content: prompt }],
-            model: 'claude-sonnet-4-6',
+            model: 'claude-3-5-sonnet-20240620',
+        }, {
+            headers: {
+                'anthropic-beta': 'max-tokens-3-5-sonnet-2024-07-15'
+            }
         });
         
         let rawAnswer = message.content[0].type === 'text' ? message.content[0].text : "";
@@ -177,8 +193,6 @@ export async function POST(req: Request) {
            });
         }
         
-        // Critical Fallback Trap: If Claude defies exact XML structure and we parse 0 objects, 
-        // we dump the raw string safely so the user at least receives data.
         if (sections.length === 0) {
            sections.push({ title: "Analysis Summary", content: rawAnswer.replace(/\n/g, '<br/>') });
         }
@@ -208,7 +222,9 @@ export async function POST(req: Request) {
         isShopify,
         socialLinks,
         brandName,
-        apexDomain
+        apexDomain,
+        url: targetUrl,
+        landingPageUrl: landingPageUrl || null
     });
 
   } catch (error: any) {
