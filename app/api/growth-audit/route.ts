@@ -244,7 +244,7 @@ export async function POST(req: Request) {
         const message = await anthropic.messages.create({
             max_tokens: 8192,
             messages: [{ role: 'user', content: prompt }],
-            model: 'claude-3-5-sonnet-20240620',
+            model: 'claude-sonnet-4-6',
         });
         
         let rawAnswer = message.content[0].type === 'text' ? message.content[0].text : "";
