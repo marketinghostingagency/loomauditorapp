@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import AuditAccordion from './AuditAccordion';
 
 export default function AuditResults({ result }: { result: any }) {
   const [isGeneratingScript, setIsGeneratingScript] = useState(false);
@@ -151,11 +152,7 @@ export default function AuditResults({ result }: { result: any }) {
           </div>
 
           {/* AI Analysis */}
-          <div className="bg-black/40 border border-[#464646] rounded-xl p-8 prose prose-invert max-w-none prose-h2:text-[#f5ed38] prose-h2:text-xl prose-h2:border-b prose-h2:border-[#464646] prose-h2:pb-4 prose-h3:text-[#dc9f0f] prose-li:text-slate-300">
-            <div className="text-lg leading-relaxed text-slate-200 whitespace-pre-wrap font-medium">
-              {result.aiAnalysis}
-            </div>
-          </div>
+          <AuditAccordion data={result.aiAnalysis} rawFallback={result.aiAnalysis} />
         </div>
       </div>
 

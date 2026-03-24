@@ -1,6 +1,7 @@
 import { prisma } from '../../../../lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import AuditAccordion from '../../../../components/AuditAccordion';
 
 export const dynamic = 'force-dynamic';
 
@@ -102,11 +103,7 @@ export default async function AuditDetail({ params }: { params: { id: string } }
                )}
             </div>
 
-            <div className="bg-black/40 border border-[#464646] rounded-xl p-8 prose prose-invert max-w-none prose-h2:text-[#f5ed38] prose-h2:text-xl prose-h2:border-b prose-h2:border-[#464646] prose-h2:pb-4 prose-h3:text-[#dc9f0f] prose-li:text-slate-300">
-              <div className="text-lg leading-relaxed text-slate-200 whitespace-pre-wrap font-medium">
-                {audit.aiAnalysis}
-              </div>
-            </div>
+            <AuditAccordion data={audit.aiAnalysis} rawFallback={audit.aiAnalysis || ''} />
           </div>
         </div>
       )}

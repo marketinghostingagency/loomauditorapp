@@ -5,29 +5,37 @@ import { prisma } from '../../../lib/prisma';
 
 const GROWTH_AUDIT_PROMPT = `You are a Senior Partner at Boston Consulting Group (BCG) specializing in E-commerce scaling, Omnichannel Retail, and DTC Growth Strategy. You are delivering an elite, master-level In-Depth Growth Audit for {BRAND} ({URL}).
 
-I will provide you with the scraped text content from their homepage and landing page (if applicable). Based on this limited visibility, you must synthesize a theoretical strategic playbook covering the following operational vectors.
+I will provide you with the scraped text content from their homepage and landing page (if applicable), along with the specific Social Media networks, Amazon presence, and Loyalty/Warranty keywords detected on their site.
 
-Format your response strictly as continuous, professional business prose. Do NOT format this like an AI generated list. Write in flowing, authoritative paragraphs. 
+CRITICAL FORMATTING INSTRUCTIONS (SMART BREVITY & JSON ARRAY):
+You must format your entire response as a raw JSON array of objects. Do NOT wrap it in backticks, do not include markdown blocks, just return the raw JSON. The frontend will parse this JSON to build interactive Accordions.
+Use "Smart Brevity" style for your content: short, punchy paragraphs, highly formatted, tactical bullet points, and absolutely zero fluff.
 
-CRITICAL RULES:
-- DO NOT use markdown headers like '#' or '##'.
-- DO NOT use bolding or bullet points unless strictly quoting specific client copy.
-- DO NOT use generic filler. Make assertions confidently.
+The JSON array must contain exactly these 4 specific sections (objects) with "title" and "content" keys:
 
-Core Web Vitals Directive: Briefly mention that their mobile website Core Web Vitals passed with flying colors (a fantastic job), but do not harp on it. Immediately transition into optimization strategy.
-
-Analyze and critique the following vectors deeply:
-1. Mobile CRO: Analyze their Compelling Offer (is it a discount, or a solution to a problem?). Is it prominent above the fold? Is there frictionless conversion via sticky headers/footers?
-2. SEO & Answer Engine Optimization (AEO): How should they structure content for AI indexers?
-3. Affiliate Strategy: Given their niche, what should their affiliate footprint look like?
-4. Organic Social & Paid Media: Break down Organic (TikTok/IG) vs Paid (Facebook/Google) strategies.
-5. CRM & Lifecycle Marketing: Propose strategies for increasing LTV through email/SMS retention.
-6. Omnichannel Retail & Amazon 1P/3P: Assuming they have ambitions for massive scale, outline the structural channel strategy for succeeding on Amazon (1P vs 3P control) alongside retail expansion while defending DTC margins. Are they bridging the gap between direct acquisition and external channels?
+[
+  {
+    "title": "Intro: Performance Branding & The Core Phrasing",
+    "content": "Analyze their branding based on the extracted text. Identify phrases that stand out. Emphasize that 'Performance Branding' must include a specific phrase that solves a problem (Who it's for, What it solves, How long it takes—like '47% less hair loss in 90 days'). Does {BRAND} do this well? Note what they should be placing at the top of landing pages and ad copy."
+  },
+  {
+    "title": "Ad Copy & Video Strategy (Meta & Google)",
+    "content": "Critique their active video ads strategy theoretically. Provide highly tactical, concrete ad copy suggestions for both Meta and Google. Structure this playfully but firmly, focusing on intent capture and compelling offers."
+  },
+  {
+    "title": "Social Footprint & Amazon Strategy",
+    "content": "I detected the following social and retail footprints: {SOCIALS}. Provide an analysis targeting their organic and paid ecosystem. Break down TikTok vs Meta. Also, analyze their Amazon potential (1P vendor vs 3P seller control) based on whether an Amazon link was detected. Explain how they must defend DTC margins while capturing retail scale."
+  },
+  {
+    "title": "Lifecycle Marketing (Email/SMS & Loyalty)",
+    "content": "Loyalty indicators detected on site: {LOYALTY}. Analyze how a loyalty program or product warranty is the ultimate tool to convert Amazon/retail buyers into 1st-party data for Email/SMS remarketing. Since Milled.com prevents automated scraping, provide theoretical feedback on what their Email flows (Welcome Series, Replenishment) SHOULD look like based on their niche."
+  }
+]
 
 Brand: {BRAND}
 URL: {URL}
 
-Extracted Content:
+Extracted Website Content:
 {CONTENT}
 `;
 
@@ -47,30 +55,33 @@ export async function POST(req: Request) {
 
     const fetchOptions = {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
       },
     };
 
     const [homeRes, landingRes] = await Promise.all([
-      fetch(targetUrl, fetchOptions),
-      landingPageUrl ? fetch(landingPageUrl, fetchOptions) : Promise.resolve(null)
+      fetch(targetUrl, fetchOptions).catch(() => null),
+      landingPageUrl ? fetch(landingPageUrl, fetchOptions).catch(() => null) : Promise.resolve(null)
     ]);
 
-    if (!homeRes.ok) throw new Error(`Failed to fetch homepage. Status: ${homeRes.status}`);
+    if (!homeRes || !homeRes.ok) throw new Error(`Failed to fetch homepage.`);
 
     const homeHtml = await homeRes.text();
     const $home = cheerio.load(homeHtml);
 
     let landingHtml = "";
-    if (landingRes && landingRes.ok) {
-        landingHtml = await landingRes.text();
-    }
+    if (landingRes && landingRes.ok) landingHtml = await landingRes.text();
     const $landing = landingHtml ? cheerio.load(landingHtml) : null;
 
     // 1. Affiliate Check
-    const affiliateKeywords = ['shareasale', 'impact.com', 'impactradius', 'cj affiliate', 'commission junction', 'rakuten', 'partnerize', 'affiliate'];
+    const affiliateKeywords = ['shareasale', 'impact.com', 'impactradius', 'cj affiliate', 'commission junction', 'rakuten', 'partnerize'];
     let affiliateProgramsFound: string[] = [];
     
+    // 2. Social & Amazon & Loyalty Checks
+    const socialLinks: string[] = [];
+    const loyaltyKeywords = ['rewards', 'loyalty', 'vip', 'warranty', 'guarantee'];
+    let loyaltyFound: string[] = [];
+
     $home('a').each((_, el) => {
         const href = $home(el).attr('href')?.toLowerCase() || '';
         const text = $home(el).text().toLowerCase();
@@ -80,9 +91,21 @@ export async function POST(req: Request) {
                 affiliateProgramsFound.push(keyword);
             }
         });
+
+        if (href.includes('facebook.com') && !socialLinks.includes('Facebook')) socialLinks.push('Facebook');
+        if (href.includes('instagram.com') && !socialLinks.includes('Instagram')) socialLinks.push('Instagram');
+        if (href.includes('tiktok.com') && !socialLinks.includes('TikTok')) socialLinks.push('TikTok');
+        if (href.includes('youtube.com') && !socialLinks.includes('YouTube')) socialLinks.push('YouTube');
+        if (href.includes('amazon.com') && !socialLinks.includes('Amazon')) socialLinks.push('Amazon');
     });
 
-    // 2. Sitemap XML
+    // Scan text for loyalty cues
+    const rawBodyText = $home('body').text().toLowerCase();
+    loyaltyKeywords.forEach(keyword => {
+       if (rawBodyText.includes(keyword)) loyaltyFound.push(keyword);
+    });
+
+    // 3. Sitemap XML
     const internalLinks = new Set<string>();
     internalLinks.add(baseUrl + '/');
 
@@ -98,12 +121,10 @@ export async function POST(req: Request) {
 
     const sitemapUrls = Array.from(internalLinks).slice(0, 100);
     let sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-    sitemapUrls.forEach(link => {
-        sitemapXml += `  <url>\n    <loc>${link}</loc>\n  </url>\n`;
-    });
+    sitemapUrls.forEach(link => { sitemapXml += `  <url>\n    <loc>${link}</loc>\n  </url>\n`; });
     sitemapXml += `</urlset>`;
 
-    // 3. Technical checks (Pixel, Shopify)
+    // 4. Technical checks (Pixel, Shopify)
     const checkPixel = (htmlSource: string) => {
       const lower = htmlSource.toLowerCase();
       return lower.includes('fbq(') || lower.includes('fbevents.js') || lower.includes('web-pixels-manager') || lower.includes('googletagmanager.com/gtm.js');
@@ -111,22 +132,24 @@ export async function POST(req: Request) {
     const isShopify = homeHtml.toLowerCase().includes('myshopify.com');
     const metaPixelFound = checkPixel(homeHtml) || (landingHtml ? checkPixel(landingHtml) : false);
 
-    // 4. Content Extraction
+    // 5. Content Extraction
     $home('script, style, nav, footer, noscript').remove();
-    let textContent = $home('body').text().replace(/\s+/g, ' ').trim().substring(0, 2500);
+    let textContent = $home('body').text().replace(/\s+/g, ' ').trim().substring(0, 3000);
 
     if ($landing) {
         $landing('script, style, nav, footer, noscript').remove();
-        textContent += "\n\n--- LANDING PAGE CONTENT ---\n\n" + $landing('body').text().replace(/\s+/g, ' ').trim().substring(0, 2500);
+        textContent += "\n\n--- LANDING PAGE CONTENT ---\n\n" + $landing('body').text().replace(/\s+/g, ' ').trim().substring(0, 3000);
     }
 
     let analysisResult = "";
     if (!process.env.ANTHROPIC_API_KEY) {
-        analysisResult = "LLM API Key missing. Growth analysis could not be generated.";
+        analysisResult = JSON.stringify([{ title: "Error", content: "LLM API Key missing. Growth analysis could not be generated." }]);
     } else {
         const prompt = GROWTH_AUDIT_PROMPT
             .replace(/{URL}/g, targetUrl)
             .replace(/{BRAND}/g, brandName)
+            .replace('{SOCIALS}', socialLinks.length > 0 ? socialLinks.join(', ') : 'None Detected')
+            .replace('{LOYALTY}', loyaltyFound.length > 0 ? loyaltyFound.join(', ') : 'No exact keywords matching rewards/loyalty/warranty found')
             .replace('{CONTENT}', textContent);
 
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -135,7 +158,11 @@ export async function POST(req: Request) {
             messages: [{ role: 'user', content: prompt }],
             model: 'claude-sonnet-4-6',
         });
-        analysisResult = message.content[0].type === 'text' ? message.content[0].text : "";
+        
+        let rawAnswer = message.content[0].type === 'text' ? message.content[0].text : "";
+        // Strip out any surrounding backticks/markdown formatting returning by the LLM accidentally
+        rawAnswer = rawAnswer.replace(/```json/gi, '').replace(/```/gi, '').trim();
+        analysisResult = rawAnswer;
     }
 
     const auditRecord = await prisma.audit.create({
@@ -157,7 +184,8 @@ export async function POST(req: Request) {
         sitemapXml: Buffer.from(sitemapXml).toString('base64'),
         aiAnalysis: analysisResult,
         metaPixelFound,
-        isShopify
+        isShopify,
+        socialLinks
     });
 
   } catch (error: any) {
