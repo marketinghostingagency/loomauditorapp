@@ -52,24 +52,32 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <a href={`https://builtwith.com/${audit.apexDomain}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#464646]">
-                BuiltWith Tech Analyzer
-              </a>
-              <a href={`https://trends.google.com/trends/explore?date=today%205-y&q=${encodeURIComponent(audit.brandName)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-[#f5ed38] font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#f5ed38]/30">
-                Google Trends (5YR)
-              </a>
-
+              {/* 1) Meta Ads */}
               <a href={`https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&is_targeted_country=false&media_type=all&q=${encodeURIComponent(audit.brandName)}`} target="_blank" rel="noopener noreferrer" className="bg-[#1877F2] hover:bg-[#166fe5] text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-blue-600/50 shadow-sm">
                 Meta Ads Library
               </a>
+              
+              {/* 2) Google Ads */}
               <a href={`https://adstransparency.google.com/?region=US&domain=${audit.apexDomain}`} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-slate-100 text-[#ea4335] font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-slate-200">
                 Google Ads Library
               </a>
+
+              {/* 3) Google Trends */}
+              <a href={`https://trends.google.com/trends/explore?date=today%205-y&q=${encodeURIComponent(audit.brandName)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-[#f5ed38] font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#f5ed38]/30">
+                Google Trends (5YR)
+              </a>
               
+              {/* 4) BuiltWith */}
+              <a href={`https://builtwith.com/${audit.apexDomain}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#464646]">
+                BuiltWith Tech Analyzer
+              </a>
+              
+              {/* PageSpeed */}
               <a href={`https://pagespeed.web.dev/report?url=${encodeURIComponent(audit.url)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-green-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-green-500/30">
                 PageSpeed: Homepage
               </a>
 
+              {/* Affiliate */}
               {affiliatePrograms && affiliatePrograms.length > 0 ? (
                  <div className="bg-[#222] text-purple-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center border border-purple-500/30 text-center text-sm md:col-span-full">
                    Affiliates Detected: {affiliatePrograms.join(', ')}

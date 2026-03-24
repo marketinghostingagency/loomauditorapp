@@ -48,25 +48,24 @@ export default function AuditResults({ result }: { result: any }) {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {/* Core Trackers */}
-            <a href={`https://builtwith.com/${result.apexDomain}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#464646]">
-              BuiltWith Tech Analyzer
-            </a>
-            <a href={`https://trends.google.com/trends/explore?date=today%205-y&q=${encodeURIComponent(result.brandName)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-[#f5ed38] font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#f5ed38]/30">
-              Google Trends (5YR)
-            </a>
-            {result.sitemapXml && (
-              <button onClick={downloadSitemap} className="bg-[#222] hover:bg-[#333] text-blue-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-blue-500/30">
-                Download Sitemap XML
-              </button>
-            )}
-
-            {/* Ad Libraries */}
+            {/* 1) Meta Ads */}
             <a href={`https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&is_targeted_country=false&media_type=all&q=${encodeURIComponent(result.brandName)}`} target="_blank" rel="noopener noreferrer" className="bg-[#1877F2] hover:bg-[#166fe5] text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#464646]/50 shadow-sm shadow-blue-500/20">
               Meta Ads Library
             </a>
+            
+            {/* 2) Google Ads */}
             <a href={`https://adstransparency.google.com/?region=US&domain=${result.apexDomain}`} target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-slate-100 text-[#ea4335] font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-slate-200">
               Google Ads Library
+            </a>
+
+            {/* 3) Google Trends */}
+            <a href={`https://trends.google.com/trends/explore?date=today%205-y&q=${encodeURIComponent(result.brandName)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-[#f5ed38] font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#f5ed38]/30">
+              Google Trends (5YR)
+            </a>
+
+            {/* 4) BuiltWith */}
+            <a href={`https://builtwith.com/${result.apexDomain}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-[#464646]">
+              BuiltWith Tech Analyzer
             </a>
             
             {/* PageSpeed */}
@@ -87,6 +86,13 @@ export default function AuditResults({ result }: { result: any }) {
                  {social.name} Profile
                </a>
             ))}
+
+            {/* Sitemap */}
+            {result.sitemapXml && (
+              <button onClick={downloadSitemap} className="bg-[#222] hover:bg-[#333] text-blue-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-blue-500/30">
+                Download Sitemap XML
+              </button>
+            )}
 
             {/* Affiliate */}
             {result.affiliatePrograms && result.affiliatePrograms.length > 0 ? (
