@@ -23,7 +23,7 @@ Content Instructions: Reinstate the philosophy that treating marketing is a scie
 Content Instructions: Is there a tagline consistent across their site? Is it based on science, a problem, a solution, or emotion? Does it connect with the audience? Briefly discuss "Performance Branding" which demands consistent branding so consumers remember the brand, creating higher conversion rates and awareness. (CRITICAL: Do NOT mention or quote "Byron Sharp" or "mental availability" in this section. Write it as your own organic philosophy). Include the 3 Hypotheses to Test.
 
 3. Title: "Website Optimization (CRO, CRM, & SEO)"
-Content Instructions: CRO: Analyze primary CTA colors (there should be strictly 1 dedicated color exclusively for primary conversion actions: Add to Cart, Buy Now, Subscribe, Checkout) and fixed CTAs. For Product Pages (PDPs), explicitly analyze the Buy-Box hierarchy: ingredient callouts, health badges (e.g. "Non-GMO", "10 Billion CFUs"), and trust metrics should be elevated ABOVE the fold or near the product title. Conversely, secondary financing text (like "ShopPay installments") should be tested UNDERNEATH the primary Add to Cart / Buy Now button to declutter the conversion zone. CRM Lead Magnets: Evaluate their pop-ups. Standard ecommerce discount lead magnets (e.g. 15-25% off) that capture Email and SMS are excellent and should be firmly praised. Completely IGNORE and do NOT critique passive "mailing list opt-in" checkboxes found during standard account creation (this is just default Shopify behavior). PageSpeed: If they pass core web vitals, state it quickly and move on. SEO/AEO: Meta titles, FAQ schema. Community: easy affiliate sign-ups. Include the 3 Hypotheses to Test.
+Content Instructions: CRO: Analyze primary CTA colors (there should be strictly 1 dedicated color exclusively for primary conversion actions: Add to Cart, Buy Now, Subscribe, Checkout) and fixed CTAs. For Product Pages (PDPs), explicitly analyze the Buy-Box hierarchy: ingredient callouts, health badges (e.g. "Non-GMO", "10 Billion CFUs"), and trust metrics should be elevated ABOVE the fold or near the product title. Conversely, secondary financing text (like "ShopPay installments") should be tested UNDERNEATH the primary Add to Cart / Buy Now button to declutter the conversion zone. CRM Lead Magnets: Evaluate their pop-ups. Standard ecommerce discount lead magnets (e.g. 15-25% off) that capture Email and SMS are excellent and should be firmly praised. Completely IGNORE and do NOT critique passive "mailing list opt-in" checkboxes found during standard account creation (this is just default Shopify behavior). Quiz Engine ({QUIZ_STATUS}): If they have a quiz, give a strong complimentary nod to their quiz and pop-up combination as an elite CRM strategy. If they do NOT have a quiz, explicitly recommend building a Quiz architecture to capture high-intent zero-party data. PageSpeed: If they pass core web vitals, state it quickly and move on. SEO/AEO: Meta titles, FAQ schema. Community: easy affiliate sign-ups. Include the 3 Hypotheses to Test.
 
 4. Title: "Organic Social Ecosystem"
 Content Instructions: Based on the {SOCIALS} array detected, explicitly identify their active footprint. Form hypotheses about organic posting frequency, engagement rates, content types (stories, grid, addressing target audience needs), and social proof mediums. Include the 3 Hypotheses to Test.
@@ -129,6 +129,9 @@ export async function POST(req: Request) {
     });
 
     const sitemapUrls = Array.from(internalLinks).slice(0, 100);
+    const quizLink = sitemapUrls.find(link => link.toLowerCase().includes('quiz'));
+    const quizStatus = quizLink ? `Active Quiz URL Detected: ${quizLink}` : `No quiz URLs detected`;
+
     let sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
     sitemapUrls.forEach(link => { sitemapXml += `  <url>\n    <loc>${link}</loc>\n  </url>\n`; });
     sitemapXml += `</urlset>`;
@@ -159,7 +162,8 @@ export async function POST(req: Request) {
             .replace(/{BRAND}/g, brandName)
             .replace('{SOCIALS}', socialLinks.length > 0 ? socialLinks.map(s => s.name).join(', ') : 'None Detected')
             .replace('{LOYALTY}', loyaltyFound.length > 0 ? loyaltyFound.join(', ') : 'No exact keywords matching rewards/loyalty/warranty found')
-            .replace('{CONTENT}', textContent);
+            .replace('{CONTENT}', textContent)
+            .replace('{QUIZ_STATUS}', quizStatus);
 
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const message = await anthropic.messages.create({
