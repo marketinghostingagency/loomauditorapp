@@ -33,7 +33,7 @@ export default function Home() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/audit', {
+      const response = await fetch('/api/growth-audit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: targetUrl, landingPageUrl: targetLandingUrl, brand }),
@@ -112,7 +112,7 @@ export default function Home() {
                     Analyzing...
                   </>
                 ) : (
-                  'Generate Script'
+                  'Generate Growth Audit'
                 )}
               </button>
             </div>
