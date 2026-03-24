@@ -209,9 +209,10 @@ export async function POST(req: Request) {
     }
 
     // Google PageSpeed Insights REST API Call
-    let pageSpeedStr = "Google PageSpeed APIs timed out or rate-limited. Omit explicit performance score metrics.";
+    let pageSpeedStr = "Google PageSpeed API data was rate limited during the audit. Omit explicit performance score metrics.";
     try {
-        const psRes = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?strategy=mobile&url=${encodeURIComponent(targetUrl)}`, { signal: AbortSignal.timeout(6000) }).catch(() => null);
+        const apiKeyParam = process.env.GOOGLE_PAGESPEED_API_KEY ? `&key=${process.env.GOOGLE_PAGESPEED_API_KEY}` : '';
+        const psRes = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?strategy=mobile&url=${encodeURIComponent(targetUrl)}${apiKeyParam}`, { signal: AbortSignal.timeout(6000) }).catch(() => null);
         if (psRes && psRes.ok) {
             const psData = await psRes.json();
             const score = psData.lighthouseResult?.categories?.performance?.score;
@@ -238,9 +239,9 @@ export async function POST(req: Request) {
 
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const message = await anthropic.messages.create({
-            max_tokens: 4096,
+            max_tokens: 8192,
             messages: [{ role: 'user', content: prompt }],
-            model: 'claude-sonnet-4-6',
+            model: 'claude-3-5-sonnet-latest',
         });
         
         let rawAnswer = message.content[0].type === 'text' ? message.content[0].text : "";
