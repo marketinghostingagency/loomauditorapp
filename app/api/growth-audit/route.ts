@@ -237,11 +237,14 @@ export async function POST(req: Request) {
             .replace('{SEO_SNIPPET}', seoSnippet)
             .replace('{FAQ_SCHEMA_STATUS}', faqStatus);
 
-        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const anthropic = new Anthropic({ 
+            apiKey: process.env.ANTHROPIC_API_KEY,
+            defaultHeaders: { "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15" }
+        });
         const message = await anthropic.messages.create({
             max_tokens: 8192,
             messages: [{ role: 'user', content: prompt }],
-            model: 'claude-3-5-sonnet-20241022',
+            model: 'claude-3-5-sonnet-20240620',
         });
         
         let rawAnswer = message.content[0].type === 'text' ? message.content[0].text : "";
