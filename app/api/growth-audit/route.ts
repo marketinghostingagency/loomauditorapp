@@ -7,30 +7,35 @@ const GROWTH_AUDIT_PROMPT = `You are a Senior Partner at Boston Consulting Group
 
 I will provide you with the scraped text content from their homepage and landing page (if applicable), along with the specific Social Media networks, Amazon presence, and Loyalty/Warranty keywords detected on their site.
 
-CRITICAL FORMATTING INSTRUCTIONS (SMART BREVITY & JSON ARRAY):
-You must format your entire response as a raw JSON array of objects. Do NOT wrap it in backticks, do not include markdown blocks, just return the raw JSON. The frontend will parse this JSON to build interactive Accordions.
-The 'content' field in your JSON objects MUST be pure, styled HTML. Do NOT use Markdown (no **, no #). You must use <p>, <strong>, <ul>, and <li> tags to format your smart brevity bullet points structurally. Make sure to use <br/> tags to space out distinct thoughts inside the <p> tag if necessary.
+CRITICAL FORMATTING INSTRUCTIONS (XML STRUCTURE & RAW HTML CONTENT):
+You must strictly format your response using the following XML tags. Do NOT output a JSON array. Do not include markdown blocks.
+Your response must consist solely of 4 <section> blocks. Each <section> must contain a <title> and <content> tag.
+The inside of the <content> tag MUST be pure, styled HTML. Do NOT use Markdown (absolutely NO asterisks ** or hash symbols #). You must use <p>, <strong>, <ul>, and <li> tags to format your smart brevity bullet points structurally. 
 
-The JSON array must contain exactly these 4 specific sections (objects) with "title" and "content" keys:
+Example Output Format:
+<section>
+  <title>Intro: Performance Branding</title>
+  <content>
+    <p>This is a <strong>strong</strong> insight.</p>
+    <ul>
+      <li>Bullet 1</li>
+    </ul>
+  </content>
+</section>
 
-[
-  {
-    "title": "Intro: Performance Branding & The Core Phrasing",
-    "content": "Analyze their branding based on the extracted text. Identify phrases that stand out. Emphasize that 'Performance Branding' must include a specific phrase that solves a problem (Who it's for, What it solves, How long it takes—like '47% less hair loss in 90 days'). Does {BRAND} do this well? Note what they should be placing at the top of landing pages and ad copy."
-  },
-  {
-    "title": "Ad Copy & Video Strategy (Meta & Google)",
-    "content": "Critique their active video ads strategy theoretically. Provide highly tactical, concrete ad copy suggestions for both Meta and Google. Structure this playfully but firmly, focusing on intent capture and compelling offers."
-  },
-  {
-    "title": "Social Footprint & Amazon Strategy",
-    "content": "I detected the following social and retail footprints: {SOCIALS}. Provide an analysis targeting their organic and paid ecosystem. Break down TikTok vs Meta. Also, analyze their Amazon potential (1P vendor vs 3P seller control) based on whether an Amazon link was detected. Explain how they must defend DTC margins while capturing retail scale."
-  },
-  {
-    "title": "Lifecycle Marketing (Email/SMS & Loyalty)",
-    "content": "Loyalty indicators detected on site: {LOYALTY}. Analyze how a loyalty program or product warranty is the ultimate tool to convert Amazon/retail buyers into 1st-party data for Email/SMS remarketing. Since Milled.com prevents automated scraping, provide theoretical feedback on what their Email flows (Welcome Series, Replenishment) SHOULD look like based on their niche."
-  }
-]
+The 4 sections you must output are:
+
+1. Title: "Intro: Performance Branding & The Core Phrasing"
+Content Instructions: Analyze their branding based on the extracted text. Identify phrases that stand out. Emphasize that 'Performance Branding' must include a specific phrase that solves a problem (Who it's for, What it solves, How long it takes). Does {BRAND} do this well? Note what they should be placing at the top of landing pages and ad copy.
+
+2. Title: "Ad Copy & Video Strategy (Meta & Google)"
+Content Instructions: Critique their active video ads strategy theoretically. Provide highly tactical, concrete ad copy suggestions for both Meta and Google. Structure this playfully but firmly, focusing on intent capture and compelling offers.
+
+3. Title: "Social Footprint & Amazon Strategy"
+Content Instructions: I detected the following social and retail footprints: {SOCIALS}. Provide an analysis targeting their organic and paid ecosystem. Break down TikTok vs Meta. Also, analyze their Amazon potential (1P vendor vs 3P seller control) based on whether an Amazon link was detected. Explain how they must defend DTC margins while capturing retail scale.
+
+4. Title: "Lifecycle Marketing (Email/SMS & Loyalty)"
+Content Instructions: Loyalty indicators detected on site: {LOYALTY}. Analyze how a loyalty program or product warranty is the ultimate tool to convert Amazon/retail buyers into 1st-party data for Email/SMS remarketing. Since Milled.com prevents automated scraping, provide theoretical feedback on what their Email flows (Welcome Series, Replenishment) SHOULD look like based on their niche.
 
 Brand: {BRAND}
 URL: {URL}
@@ -99,7 +104,6 @@ export async function POST(req: Request) {
         if (href.includes('amazon.com') && !socialLinks.includes('Amazon')) socialLinks.push('Amazon');
     });
 
-    // Scan text for loyalty cues
     const rawBodyText = $home('body').text().toLowerCase();
     loyaltyKeywords.forEach(keyword => {
        if (rawBodyText.includes(keyword)) loyaltyFound.push(keyword);
@@ -143,7 +147,7 @@ export async function POST(req: Request) {
 
     let analysisResult = "";
     if (!process.env.ANTHROPIC_API_KEY) {
-        analysisResult = JSON.stringify([{ title: "Error", content: "LLM API Key missing. Growth analysis could not be generated." }]);
+        analysisResult = JSON.stringify([{ title: "Error", content: "<p>LLM API Key missing. Growth analysis could not be generated.</p>" }]);
     } else {
         const prompt = GROWTH_AUDIT_PROMPT
             .replace(/{URL}/g, targetUrl)
@@ -154,15 +158,32 @@ export async function POST(req: Request) {
 
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const message = await anthropic.messages.create({
-            max_tokens: 4096,
+            max_tokens: 8192,
             messages: [{ role: 'user', content: prompt }],
-            model: 'claude-sonnet-4-6',
+            model: 'claude-3-5-sonnet-latest',
         });
         
         let rawAnswer = message.content[0].type === 'text' ? message.content[0].text : "";
-        // Strip out any surrounding backticks/markdown formatting returning by the LLM accidentally
-        rawAnswer = rawAnswer.replace(/```json/gi, '').replace(/```/gi, '').trim();
-        analysisResult = rawAnswer;
+        
+        // Structurally extract XML nodes mapping to JSON Array for the Accordion frontend component
+        const sections: { title: string, content: string }[] = [];
+        const sectionRegex = /<section>[\s\S]*?<title>([\s\S]*?)<\/title>[\s\S]*?<content>([\s\S]*?)<\/content>[\s\S]*?<\/section>/gi;
+        
+        let match;
+        while ((match = sectionRegex.exec(rawAnswer)) !== null) {
+           sections.push({
+             title: match[1].trim(),
+             content: match[2].trim()
+           });
+        }
+        
+        // Critical Fallback Trap: If Claude defies exact XML structure and we parse 0 objects, 
+        // we dump the raw string safely so the user at least receives data.
+        if (sections.length === 0) {
+           sections.push({ title: "Analysis Summary", content: rawAnswer.replace(/\n/g, '<br/>') });
+        }
+
+        analysisResult = JSON.stringify(sections);
     }
 
     const auditRecord = await prisma.audit.create({
