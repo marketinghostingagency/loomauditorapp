@@ -2,6 +2,8 @@ import { prisma } from '../../../../lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AuditDetail({ params }: { params: { id: string } }) {
   const audit = await prisma.audit.findUnique({
     where: { id: params.id }
