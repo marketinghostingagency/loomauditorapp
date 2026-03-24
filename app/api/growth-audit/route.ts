@@ -9,7 +9,7 @@ I will provide you with the scraped text content from their homepage and landing
 
 CRITICAL FORMATTING INSTRUCTIONS (SMART BREVITY & JSON ARRAY):
 You must format your entire response as a raw JSON array of objects. Do NOT wrap it in backticks, do not include markdown blocks, just return the raw JSON. The frontend will parse this JSON to build interactive Accordions.
-Use "Smart Brevity" style for your content: short, punchy paragraphs, highly formatted, tactical bullet points, and absolutely zero fluff.
+The 'content' field in your JSON objects MUST be pure, styled HTML. Do NOT use Markdown (no **, no #). You must use <p>, <strong>, <ul>, and <li> tags to format your smart brevity bullet points structurally. Make sure to use <br/> tags to space out distinct thoughts inside the <p> tag if necessary.
 
 The JSON array must contain exactly these 4 specific sections (objects) with "title" and "content" keys:
 
@@ -185,7 +185,9 @@ export async function POST(req: Request) {
         aiAnalysis: analysisResult,
         metaPixelFound,
         isShopify,
-        socialLinks
+        socialLinks,
+        brandName,
+        apexDomain
     });
 
   } catch (error: any) {

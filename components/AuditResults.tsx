@@ -93,6 +93,14 @@ export default function AuditResults({ result }: { result: any }) {
               >
                 Google Ads Library
               </a>
+              <a 
+                href={`https://builtwith.com/${result.apexDomain}`}
+                target="_blank"  
+                rel="noopener noreferrer"
+                className="bg-[#222222] hover:bg-[#333333] text-white font-medium py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors flex-1 border border-[#464646]"
+              >
+                BuiltWith Tech Stack
+              </a>
             </div>
           </div>
         </div>

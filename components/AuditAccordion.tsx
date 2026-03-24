@@ -46,9 +46,10 @@ export default function AuditAccordion({ data, rawFallback }: { data: any, rawFa
             <div 
               className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[4000px] opacity-100' : 'max-h-0 opacity-0'}`}
             >
-              <div className="p-6 pt-0 text-slate-200 text-lg leading-relaxed font-medium whitespace-pre-wrap border-t border-[#464646]/50">
-                {section.content}
-              </div>
+              <div 
+                className="p-6 pt-0 text-slate-200 text-lg leading-relaxed font-medium whitespace-pre-wrap border-t border-[#464646]/50 prose prose-invert max-w-none prose-p:mb-4 prose-ul:mt-2 prose-li:mb-1 prose-strong:text-[#f5ed38]"
+                dangerouslySetInnerHTML={{ __html: section.content }}
+              />
             </div>
           </div>
         );
