@@ -155,23 +155,23 @@ export async function POST(req: Request) {
 
     // Spin up concurrent multi-page crawler to map Meta Data
     const urlsToCrawl = sitemapUrls.slice(0, 20); // Capture the top 20 structural limbs
-    let csvContent = "URL,Meta Title,Meta Description\\n";
+    let csvContent = "URL,Meta Title,Meta Description\n";
     const crawlResults = await Promise.all(urlsToCrawl.map(async (u) => {
         try {
             const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }, signal: AbortSignal.timeout(5000) }).catch(() => null);
-            if (!r || !r.ok) return `"${u}","Access Blocked","Access Blocked"\\n`;
+            if (!r || !r.ok) return `"${u}","Access Blocked","Access Blocked"\n`;
             const html = await r.text();
             const $u = cheerio.load(html);
             let title = $u('title').text()?.replace(/"/g, '""')?.trim() || "Missing Title";
             let desc = $u('meta[name="description"]').attr('content')?.replace(/"/g, '""')?.trim() || "Missing Description";
-            return `"${u}","${title}","${desc}"\\n`;
+            return `"${u}","${title}","${desc}"\n`;
         } catch (e) {
-            return `"${u}","Error","Error"\\n`;
+            return `"${u}","Error","Error"\n`;
         }
     }));
     csvContent += crawlResults.join('');
     
-    let seoSnippet = "Top Site Infrastructure Meta Mappings:\\n";
+    let seoSnippet = "Top Site Infrastructure Meta Mappings:\n";
     crawlResults.slice(0, 5).forEach(res => seoSnippet += res);
 
     // 4. Technical checks (Pixel, Shopify, Schema)

@@ -8,7 +8,14 @@ export default function AuditResults({ result }: { result: any }) {
 
   const downloadSitemap = () => {
     if (!result.sitemapXml) return;
-    const blob = new Blob([atob(result.sitemapXml)], { type: 'text/csv;charset=utf-8;' });
+    
+    const binStr = atob(result.sitemapXml);
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) {
+        bytes[i] = binStr.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: 'text/csv;charset=utf-8;' });
+    
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
