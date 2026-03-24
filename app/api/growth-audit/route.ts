@@ -11,38 +11,45 @@ I will provide you with the scraped text content from their homepage and landing
 CRITICAL FORMATTING INSTRUCTIONS (XML STRUCTURE & CONTENT FORMAT):
 You must strictly format your response using exactly 7 <section> blocks.
 Each <section> must contain an exactly matched <title> and a <content> tag.
-The inside of the <content> tag MUST be strictly formatted in STANDARD MARKDOWN. Use **bold** for emphasis, \`-\` for bulleted lists, and double newlines (\`\\n\\n\`) to separate paragraphs. Use "Smart Brevity: The Power of Saying More with Less". Do NOT output raw HTML tags like <ul> or <p>.
+The inside of the <content> tag MUST be strictly formatted in STANDARD MARKDOWN. Use **bold** for emphasis, \`-\` for bulleted lists, and double newlines (\`\\n\\n\`) to separate paragraphs. 
+Use "Smart Brevity: The Power of Saying More with Less". Keep the insights brief, punchy, and bullet-pointed, but ensure the analysis is exhaustive and BCG-consultant tier. It should contain multiple tactical hypotheses that they can test organically woven into the bullet points (do not specifically identify them as "Hypotheses" or create a literal list of hypotheses).
 
-HYPOTHESIS GENERATION (MANDATORY):
-To ensure elite consulting depth, for every single section EXCEPT the Intro, you MUST conclude the section's <content> with a dedicated unordered list (<ul>) titled "<strong>Hypotheses to Test:</strong>" containing exactly 3 highly specific, concrete A/B testing variations or tactical strategies to execute.
+1. Title: "Brand Messaging"
+Content Instructions: Is there a tag line consistent across all channels? Is it based on science, problem, solution, or emotion? Does it connect with the audience? Do make any suggestions just try and identify if they have any they are using based on their site. Briefly discuss "Performance Branding" which involves consistent branding so consumers remember your brand, creating higher conversion rates, interest, and increasing awareness. (CRITICAL: Do NOT mention or quote "Byron Sharp" or "mental availability").
 
-1. Title: "Intro: The Philosophy of Marketing Science"
-Content Instructions: Reinstate the philosophy that treating marketing is a science. Explain that anyone who claims to "know how to grow your brand" is full of nonsense. Explain that anything they read from here on out are purely hypotheses based on 20 years of marketing experience that must be rigorously A/B tested to find truth.
+2. Title: "Website Optimization & Technicals"
+Content Instructions: 
+- CRO: Analyze primary CTA colors (there should be strictly 1 dedicated color exclusively for primary conversion actions) and use of Fixed CTAs.
+- CRM Lead Magnets: Evaluate their pop-ups and landing pages. Do they have compelling offers? (Not all need to be discounts, tip-based magnets work too). Give a nod to their Quiz Engine if they successfully have one ({QUIZ_STATUS}). Ignore passive Shopify checkout "opt-in" checkboxes.
+- Page Speed Insights: Keep this extremely brief. Assume they passed core web vitals and do not dwell on it. 
+- SEO & AEO: Evaluate meta titles and descriptions. Emphasize alt image text containing relevant keywords. Evaluate their schema markup utilizing the provided ({FAQ_SCHEMA_STATUS}): proper schema including FAQs and Author markup is mandatory for AEO. 
+- Community Engagement: Do they offer easy affiliate sign ups and clear links to organic social pages?
 
-2. Title: "Brand Messaging"
-Content Instructions: Is there a tagline consistent across their site? Is it based on science, a problem, a solution, or emotion? Does it connect with the audience? Briefly discuss "Performance Branding" which demands consistent branding so consumers remember the brand, creating higher conversion rates and awareness. (CRITICAL: Do NOT mention or quote "Byron Sharp" or "mental availability" in this section. Write it as your own organic philosophy). Include the 3 Hypotheses to Test.
+3. Title: "Organic Social Ecosystem"
+Content Instructions: Based on the {SOCIALS} array detected, explicitly identify their active footprint. Form theories about their organic posting. Are they posting regularly? Identify frequency and engagement rates (engagement / likes or followers) of each channel. What kind of content is being posted? Does it address the needs or interests of the target audience? Is there enough social proof being shared? What mediums (stories, grid)?
 
-3. Title: "Website Optimization (CRO, CRM, & SEO)"
-Content Instructions: CRO: Analyze primary CTA colors (there should be strictly 1 dedicated color exclusively for primary conversion actions: Add to Cart, Buy Now, Subscribe, Checkout) and fixed CTAs. For Product Pages (PDPs), explicitly analyze the Buy-Box hierarchy: ingredient callouts, health badges (e.g. "Non-GMO", "10 Billion CFUs"), and trust metrics should be elevated ABOVE the fold or near the product title. Conversely, secondary financing text (like "ShopPay installments") should be tested UNDERNEATH the primary Add to Cart / Buy Now button to declutter the conversion zone. CRM Lead Magnets: Evaluate their pop-ups. Standard ecommerce discount lead magnets (e.g. 15-25% off) that capture Email and SMS are excellent and should be firmly praised. Completely IGNORE and do NOT critique passive "mailing list opt-in" checkboxes found during standard account creation (this is just default Shopify behavior). Quiz Engine ({QUIZ_STATUS}): If they have a quiz, give a strong complimentary nod to their quiz and pop-up combination as an elite CRM strategy. If they do NOT have a quiz, explicitly recommend building a Quiz architecture to capture high-intent zero-party data. SEO/AEO (Answer Engine Optimization): Evaluate their schema markup utilizing the provided ({FAQ_SCHEMA_STATUS}). If they have FAQ schema, praise them heavily as this is paramount for LLM citation. If they do NOT have FAQ schema, forcefully recommend injecting schema.org/FAQPage markup so AI engines like ChatGPT and Perplexity can scrape and recommend their products. Community: easy affiliate sign-ups. Include the 3 Hypotheses to Test.
+4. Title: "Meta Advertising (Facebook & Instagram)"
+Content Instructions: Theoretically evaluate their Meta strategy: Are they running cobranded ads? Or non-cobranded with social proof? Are they using various hooks? Is the brand messaging consistent to ensure the brand is memorable in the first 4 seconds via the copy/video?
 
-4. Title: "Organic Social Ecosystem"
-Content Instructions: Based on the {SOCIALS} array detected, explicitly identify their active footprint. Form hypotheses about organic posting frequency, engagement rates, content types (stories, grid, addressing target audience needs), and social proof mediums. Include the 3 Hypotheses to Test.
+5. Title: "TikTok Advertising & Affiliates"
+Content Instructions: Theoretically evaluate: Do they have TikTok shop? Do they have TikTok affiliates? Are their affiliate programs interconnected (mention Social Snowball as a good program for that)?
 
-5. Title: "Paid Media Ecosystem (Meta & Google Ads Libraries)"
-Content Instructions: Explicitly direct the user to click the "Meta Ads Library" and "Google Ads Library" buttons located in the Intelligence Hub above to physically verify these theories. Theoretically evaluate their Meta & Google strategy: Are they running cobranded ads? Non-cobranded with social proof? Various hooks? Is the brand messaging consistent in the first 4 seconds of video/copy to ensure memorability? Are Google search ads emotionally solving problems while creating urgency in line with the brand messaging? Include the 3 Hypotheses to Test.
-
-6. Title: "TikTok Advertising & Affiliates"
-Content Instructions: Are they utilizing TikTok Shop? TikTok Affiliates? Are their affiliate programs interconnected (e.g. leveraging Social Snowball)? Include the 3 Hypotheses to Test.
+6. Title: "Google Advertising & YouTube"
+Content Instructions: Theoretically evaluate: How is the copy? Is it in line with brand messaging? Solving problems using emotional appeal. All messaging needs to create urgency. Is there any YouTube advertising? Point out that many times social assets can be easily repurposed for YouTube.
 
 7. Title: "CRM & Lifecycle Marketing (Retention)"
-Content Instructions: Provide a note: 'I've been in mobile marketing since 2005 (2 years before the iPhone came out)'. Emphasize the marketer's holy grail is a 1-to-1 connection via the phone. Evaluate SMS potential. Emphasize that SMS/Email flows (Welcome Series, Post-Purchase) are where the bulk of revenue should come from. Emphasize the "4th Purchase" rule: if they buy 4 times, they are loyal and must become brand evangelists/affiliates compensated for referrals. Campaigns should only articulate timely news/offers. Include the 3 Hypotheses to Test.
+Content Instructions: Provide a note: 'I've been in mobile marketing since 2005 (2 years before the iPhone came out)'. A marketer's holy grail is to build a 1-to-1 connection with customers and nothing is more intimate than the phone. Identify SMS marketing potential. Emphasize that flows or automations should be where the bulk of CRM revenue comes from:
+- Flows for prospects that gave data to get the lead magnet.
+- Post-purchase flows ensuring customers are using the product, answering questions, building brand loyalty, and attempting to secure their 2nd purchase. 
+- The 4th Purchase Rule: If you get a customer to buy 4 times, they are a loyal customer. You must ensure that customer is an affiliate/brand evangelist on social channels and gets compensated for referrals.
+- Campaigns (email/SMS) should then be used to articulate any timely offers or news that would interest your customers or leads.
 
 Brand: {BRAND}
 URL: {URL}
 
 Extracted Website Content:
 {CONTENT}
-`;
+\`;
 
 export async function POST(req: Request) {
   try {
@@ -82,6 +89,14 @@ export async function POST(req: Request) {
     const affiliateKeywords = ['shareasale', 'impact.com', 'impactradius', 'cj affiliate', 'commission junction', 'rakuten', 'partnerize', 'social snowball', 'socialsnowball'];
     let affiliateProgramsFound: string[] = [];
     
+    // Evaluate full raw HTML to catch tracking scripts loaded natively in the DOM headers
+    const homeHtmlLower = homeHtml.toLowerCase();
+    affiliateKeywords.forEach(keyword => {
+        if (homeHtmlLower.includes(keyword) && !affiliateProgramsFound.includes(keyword)) {
+            affiliateProgramsFound.push(keyword);
+        }
+    });
+    
     // 2. Social & Amazon & Loyalty Checks
     const socialLinks: { name: string, url: string }[] = [];
     const loyaltyKeywords = ['rewards', 'loyalty', 'vip', 'warranty', 'guarantee'];
@@ -92,12 +107,6 @@ export async function POST(req: Request) {
         if (!href) return;
         const lowerHref = href.toLowerCase();
         const text = $home(el).text().toLowerCase();
-        
-        affiliateKeywords.forEach(keyword => {
-            if ((lowerHref.includes(keyword) || text.includes(keyword)) && !affiliateProgramsFound.includes(keyword)) {
-                affiliateProgramsFound.push(keyword);
-            }
-        });
 
         if (lowerHref.includes('facebook.com') && !socialLinks.some(s => s.name === 'Facebook')) socialLinks.push({ name: 'Facebook', url: href });
         if (lowerHref.includes('instagram.com') && !socialLinks.some(s => s.name === 'Instagram')) socialLinks.push({ name: 'Instagram', url: href });
