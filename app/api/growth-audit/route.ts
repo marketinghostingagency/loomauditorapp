@@ -175,7 +175,7 @@ export async function POST(req: Request) {
         let match;
         while ((match = sectionRegex.exec(rawAnswer)) !== null) {
            sections.push({
-             title: match[1].trim(),
+             title: match[1].trim().replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
              content: match[2].trim()
            });
         }

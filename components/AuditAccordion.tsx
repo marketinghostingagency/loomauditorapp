@@ -32,8 +32,8 @@ export default function AuditAccordion({ data, rawFallback }: { data: any, rawFa
               onClick={() => setOpenIndex(isOpen ? null : idx)}
               className="w-full flex items-center justify-between p-6 text-left focus:outline-none hover:bg-[#222] transition-colors"
             >
-              <h3 className="text-[#f5ed38] font-bold text-xl flex items-center gap-3">
-                 {section.title}
+              <h3 className="text-xl font-bold text-white text-left max-w-2xl leading-tight">
+                 {section.title.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"')}
               </h3>
               <svg 
                 className={`w-6 h-6 text-[#f5ed38] transform transition-transform duration-300 shrink-0 ${isOpen ? 'rotate-180' : ''}`} 
