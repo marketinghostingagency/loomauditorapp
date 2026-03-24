@@ -2,15 +2,16 @@ import { NextResponse } from 'next/server';
 import * as cheerio from 'cheerio';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '../../../lib/prisma';
+import { marked } from 'marked';
 
 const GROWTH_AUDIT_PROMPT = `You are Joel Otten, a Senior Partner at Boston Consulting Group (BCG) specializing in E-commerce scaling, Omnichannel Retail, and DTC Growth Strategy. You are delivering an elite, master-level In-Depth Growth Audit for {BRAND} ({URL}).
 
 I will provide you with the scraped text content from their homepage and landing page, along with the specific Social Media networks, Amazon presence, and Loyalty/Warranty keywords detected on their site.
 
-CRITICAL FORMATTING INSTRUCTIONS (XML STRUCTURE & RAW HTML CONTENT):
+CRITICAL FORMATTING INSTRUCTIONS (XML STRUCTURE & CONTENT FORMAT):
 You must strictly format your response using exactly 8 <section> blocks.
-Each <section> must contain a exactly matched <title> and a <content> tag.
-The inside of the <content> tag MUST be pure, styled HTML. Do NOT use Markdown (absolutely NO asterisks ** or hash symbols #). YOU MUST STRICTLY WRAP EVERY SINGLE SENTENCE OR PARAGRAPH IN <p> TAGS. DO NOT OUTPUT RAW FLOATING TEXT. Use <p>, <strong>, <ul>, and <li> tags. Do NOT make paragraphs too long! Use "Smart Brevity: The Power of Saying More with Less".
+Each <section> must contain an exactly matched <title> and a <content> tag.
+The inside of the <content> tag MUST be strictly formatted in STANDARD MARKDOWN. Use **bold** for emphasis, \`-\` for bulleted lists, and double newlines (\`\\n\\n\`) to separate paragraphs. Use "Smart Brevity: The Power of Saying More with Less". Do NOT output raw HTML tags like <ul> or <p>.
 
 HYPOTHESIS GENERATION (MANDATORY):
 To ensure elite consulting depth, for every single section EXCEPT the Intro, you MUST conclude the section's <content> with a dedicated unordered list (<ul>) titled "<strong>Hypotheses to Test:</strong>" containing exactly 3 highly specific, concrete A/B testing variations or tactical strategies to execute.
@@ -174,14 +175,19 @@ export async function POST(req: Request) {
         
         let match;
         while ((match = sectionRegex.exec(rawAnswer)) !== null) {
+           const rawMarkdown = match[2].trim();
+           // Compile raw Markdown from Claude firmly into safe HTML syntax before shipping to the client UI
+           const contentHtml = await marked.parse(rawMarkdown);
+
            sections.push({
              title: match[1].trim().replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"'),
-             content: match[2].trim()
+             content: contentHtml
            });
         }
         
         if (sections.length === 0) {
-           sections.push({ title: "Analysis Summary", content: rawAnswer.replace(/\n/g, '<br/>') });
+           const fallbackHtml = await marked.parse(rawAnswer);
+           sections.push({ title: "Analysis Summary", content: fallbackHtml });
         }
 
         analysisResult = JSON.stringify(sections);
