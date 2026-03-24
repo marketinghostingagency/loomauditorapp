@@ -81,11 +81,11 @@ export default function AuditResults({ result }: { result: any }) {
               </a>
             )}
 
-            {/* Social Links */}
-            {result.socialLinks && result.socialLinks.map((social: string) => (
-               <div key={social} className="bg-[#222] text-slate-300 font-medium py-2 px-4 rounded-lg flex items-center justify-center border border-[#464646]">
-                 Found: {social}
-               </div>
+            {/* Social Links Outbound */}
+            {result.socialLinks && result.socialLinks.map((social: { name: string, url: string }) => (
+               <a key={social.name} href={social.url} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-slate-200 font-medium py-2 px-4 rounded-lg flex items-center justify-center border border-[#464646] transition-colors shadow-sm">
+                 {social.name} Profile
+               </a>
             ))}
 
             {/* Affiliate */}

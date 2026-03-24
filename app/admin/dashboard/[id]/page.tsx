@@ -2,10 +2,12 @@ import { prisma } from '../../../../lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AuditAccordion from '../../../../components/AuditAccordion';
+import ClientDashboardActions from './ClientDashboardActions';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AuditDetail({ params }: { params: { id: string } }) {
+export default async function AuditDetail(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const audit = await prisma.audit.findUnique({
     where: { id: params.id }
   });
@@ -14,7 +16,6 @@ export default async function AuditDetail({ params }: { params: { id: string } }
     notFound();
   }
 
-  // Safely parse JSON strings from the database for the new UI Hub
   let affiliatePrograms: string[] = [];
   try {
      affiliatePrograms = audit.affiliatePrograms ? JSON.parse(audit.affiliatePrograms) : [];
@@ -26,6 +27,7 @@ export default async function AuditDetail({ params }: { params: { id: string } }
         <Link href="/admin/dashboard" className="text-white font-bold text-xl tracking-tight hover:text-[#f5ed38] transition-colors flex items-center gap-2">
           ← Back to Dashboard
         </Link>
+        <ClientDashboardActions auditId={audit.id} />
       </nav>
 
       <main className="max-w-6xl mx-auto px-6 py-12">
@@ -64,12 +66,10 @@ export default async function AuditDetail({ params }: { params: { id: string } }
                 Google Ads Library
               </a>
               
-              {/* PageSpeed */}
               <a href={`https://pagespeed.web.dev/report?url=${encodeURIComponent(audit.url)}`} target="_blank" rel="noopener noreferrer" className="bg-[#222] hover:bg-[#333] text-green-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-green-500/30">
                 PageSpeed: Homepage
               </a>
 
-              {/* Affiliate */}
               {affiliatePrograms && affiliatePrograms.length > 0 ? (
                  <div className="bg-[#222] text-purple-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center border border-purple-500/30 text-center text-sm md:col-span-full">
                    Affiliates Detected: {affiliatePrograms.join(', ')}
@@ -84,7 +84,7 @@ export default async function AuditDetail({ params }: { params: { id: string } }
         )}
 
         {audit.aiAnalysis && (
-          <div className="glass-card rounded-2xl p-6 md:p-10 border border-[#dc9f0f]/30 relative overflow-hidden mb-8">
+          <div className="glass-card rounded-2xl p-6 md:p-10 border border-[#464646] shadow-xl relative overflow-hidden mb-8">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#dc9f0f] via-[#f5ed38] to-[#dc9f0f]"></div>
             
             <div className="flex flex-col gap-6">
