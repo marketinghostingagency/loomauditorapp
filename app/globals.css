@@ -75,9 +75,81 @@
   }
 }
 
+@layer components {
+  /* Quill Editor Simplicity Theme Overrides */
+  .quill-simplicity .ql-toolbar {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+  .quill-simplicity .ql-container {
+    border-color: #cbd5e1;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    background: white;
+    color: #07004C;
+  }
+  
+  /* Quill Editor MHA Theme Overrides */
+  .quill-mha .ql-toolbar {
+    background: #222222;
+    border-color: #464646;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+  }
+  .quill-mha .ql-toolbar button {
+    color: white;
+  }
+  .quill-mha .ql-toolbar stroke {
+    stroke: white;
+  }
+  .quill-mha .ql-toolbar fill {
+    fill: white;
+  }
+  .quill-mha .ql-container {
+    border-color: #464646;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    background: rgba(0,0,0,0.4);
+    color: #f8fafc;
+  }
+}
+
 @keyframes blob {
   0% { transform: translate(0px, 0px) scale(1); }
   33% { transform: translate(30px, -50px) scale(1.1); }
   66% { transform: translate(-20px, 20px) scale(0.9); }
   100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    background-image: none !important;
+  }
+  .glass-card {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  .max-h-0 {
+    max-height: none !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+  h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+  p, li {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }
