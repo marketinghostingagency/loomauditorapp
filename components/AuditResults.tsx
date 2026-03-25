@@ -160,7 +160,7 @@ export default function AuditResults({ result }: { result: any }) {
           </div>
 
           {/* AI Analysis */}
-          <AuditAccordion data={result.aiAnalysis} rawFallback={result.aiAnalysis} />
+          <AuditAccordion auditId={result.auditId} data={result.aiAnalysis} rawFallback={result.aiAnalysis} isEditable={false} />
         </div>
       </div>
 
