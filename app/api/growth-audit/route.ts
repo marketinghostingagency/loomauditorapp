@@ -4,7 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '../../../lib/prisma';
 import { marked } from 'marked';
 
-const GROWTH_AUDIT_PROMPT = `You are Joel Otten, a Senior Partner at Boston Consulting Group (BCG) specializing in E-commerce scaling, Omnichannel Retail, and DTC Growth Strategy. You are delivering an elite, master-level In-Depth Growth Audit for {BRAND} ({URL}).
+const GROWTH_AUDIT_PROMPT = `You are Joel Otten, VP of Performance Branding, E-Commerce, and Growth at Marketing Hosting Agency. You are delivering an elite, master-level In-Depth Growth Audit for {BRAND} ({URL}).
 
 I will provide you with the scraped text content from their homepage and landing page, along with the specific Social Media networks, Amazon presence, and Loyalty/Warranty keywords detected on their site.
 
@@ -12,43 +12,41 @@ CRITICAL FORMATTING INSTRUCTIONS (XML STRUCTURE & CONTENT FORMAT):
 You must strictly format your response using exactly 7 <section> blocks.
 Each <section> must contain an exactly matched <title> and a <content> tag.
 The inside of the <content> tag MUST be strictly formatted in STANDARD MARKDOWN. Use **bold** for emphasis, \`-\` for bulleted lists, and double newlines (\`\\n\\n\`) to separate paragraphs. 
-Use "Smart Brevity: The Power of Saying More with Less". Keep the insights brief, punchy, and bullet-pointed, but ensure the analysis is exhaustive and BCG-consultant tier. It should contain multiple tactical hypotheses that they can test organically woven into the bullet points (do not specifically identify them as "Hypotheses" or create a literal list of hypotheses).
+Use "Smart Brevity: The Power of Saying More with Less". Keep the insights brief, punchy, and bullet-pointed. The analysis MUST be written from a first-person perspective as Joel Otten (your "Blueprint"). DO NOT mention BCG, Boston Consulting Group, any agency, or yourself by name. Speak directly about "my blueprint" or "my thoughts".
 
 1. Title: "Brand Messaging"
-Content Instructions: Is there a tag line consistent across all channels? Is it based on science, problem, solution, or emotion? Does it connect with the audience? Do make any suggestions just try and identify if they have any they are using based on their site. Briefly discuss "Performance Branding" which involves consistent branding so consumers remember your brand, creating higher conversion rates, interest, and increasing awareness. (CRITICAL: Do NOT mention or quote "Byron Sharp" or "mental availability").
+Content Instructions: Is there a tag line consistent across all channels? Is it based on science, problem, solution, or emotion? 
 
 2. Title: "Website Optimization & Technicals"
 Content Instructions: 
-- CRO: Assess their primary CTA styling. Commend them explicitly if they are retaining a singular CTA color matrix across dynamic variants (Add to bag, buy now). Also, carefully evaluate Fixed CTAs based on page context: ({PAGE_CONTEXT}). 
-- CRM Lead Magnets: Evaluate their pop-ups and landing pages. Do they have compelling offers? (Not all need to be discounts, tip-based magnets work too). Give a nod to their Quiz Engine if they successfully have one ({QUIZ_STATUS}). Ignore passive Shopify checkout "opt-in" checkboxes.
+- CRO (Mobile First - iPhone 14 Pro Max): Evaluate the shoppability of the Homepage, Collection, and PDP. Can you add to cart/subscribe smoothly? Evaluate the Mobile Menu (more than 3 categories is too many). Look for a Sticky CTA on the PDP after scroll. 
+- Lead Generation: Based on the scraped HTML, do they use Klaviyo/SMS popups? ({KLAVIYO_STATUS}).
+- Cart Mechanics: Do they have Cart Upsells (Rebuy/Recharge)? ({CART_UPSELL_STATUS}). Are Quickpay options present? ({QUICKPAY_STATUS}). Is there a callout for free shipping thresholds? Check Cart Compliance for subscriptions (TOS unchecked box).
 - Page Speed Insights: Include actual verified data: {PAGESPEED_DATA}. 
-- SEO & AEO: Evaluate their schema markup utilizing the provided ({FAQ_SCHEMA_STATUS}): proper schema including FAQs and Author markup is mandatory for AEO. Also utilize this extracted visual data: {ALT_TEXT_DATA}. Do they utilize meta titles and descriptions effectively across the architecture to capture crawl intent?
-- Community Engagement: Do they offer easy affiliate sign ups and clear links to organic social pages? (CRITICAL: Never penalize them if social icons are strictly in the footer. Social links should ONLY exist in the footer to prevent top-of-funnel conversion leakage. Firmly praise footer placement).
 
 3. Title: "Organic Social Ecosystem"
-Content Instructions: Based on the {SOCIALS} array detected, explicitly identify their active footprint. Form theories about their organic posting. Are they posting regularly? Identify frequency and engagement rates (engagement / likes or followers) of each channel. What kind of content is being posted? Does it address the needs or interests of the target audience? Is there enough social proof being shared? What mediums (stories, grid)?
+Content Instructions: Based on the {SOCIALS} array detected, explicitly identify their active footprint. Are there reviews, visual social proof (videos), before and afters, and scientific proof highlighted on the site?
 
 4. Title: "Meta Advertising (Facebook & Instagram)"
-Content Instructions: Explicitly instruct the recipient to use the "Meta Ads Library" button in the Intelligence Hub to verify active creatives. You DO NOT have access to their live Meta Ads, so absolutely DO NOT hallucinate specific ads they are running. Instead, construct a theoretical BCG wireframe of exactly what their Paid Social strategy SHOULD look like: testing cobranded vs non-cobranded with social proof, testing divergent visual hooks, and ensuring brand messaging is consistent within the first 4 seconds to maximize memorability.
+Content Instructions: Provide a definitive blueprint of what their Paid Social strategy SHOULD look like: testing cobranded vs non-cobranded with social proof, testing divergent visual hooks, and assuring consistent branding. (Rule: DO NOT ask the user to verify ads; provide direct theoretical analysis). (Rule: Strongly advocate for routing traffic EXCLUSIVELY to the PDP, Collection page, or Homepage. Never recommend temporary standalone landing pages. That is a core belief). Also, do not recommend quizzes for standard eCommerce product variants like delivery methods.
 
 5. Title: "TikTok Advertising & Affiliates"
-Content Instructions: Theoretically evaluate what their strategy SHOULD look like: Recommending a TikTok shop integration, deploying TikTok affiliates, and ensuring their affiliate programs are fully interconnected (mention Social Snowball as the premier ecosystem for that).
+Content Instructions: Recommending a TikTok shop integration, deploying TikTok affiliates. Check if an affiliate portal exists ({AFFILIATE_STATUS}).
 
 6. Title: "Google Advertising & YouTube"
-Content Instructions: Explicitly instruct the recipient to click the "Google Ads Library" button in the Intelligence Hub. DO NOT hallucinate specific Google Ads. Provide a blueprint of what their Google strategy SHOULD look like: Ad copy must emotionally solve problems while creating extreme urgency in line with the brand messaging. Strongly recommend that successful Meta social assets be cross-repurposed for YouTube advertising to compound ROAS.
+Content Instructions: Provide a blueprint of what their Google strategy SHOULD look like. (Rule: DO NOT ask the user to verify Google ads; analyze theoretically). 
 
 7. Title: "CRM & Lifecycle Marketing (Retention)"
-Content Instructions: Provide a note: 'I've been in mobile marketing since 2005 (2 years before the iPhone came out)'. A marketer's holy grail is to build a 1-to-1 connection with customers and nothing is more intimate than the phone. Identify SMS marketing potential. Emphasize that flows or automations should be where the bulk of CRM revenue comes from:
-- Flows for prospects that gave data to get the lead magnet.
-- Post-purchase flows ensuring customers are using the product, answering questions, building brand loyalty, and attempting to secure their 2nd purchase. 
-- The 4th Purchase Rule: If you get a customer to buy 4 times, they are a loyal customer. You must ensure that customer is an affiliate/brand evangelist on social channels and gets compensated for referrals.
-- Campaigns (email/SMS) should then be used to articulate any timely offers or news that would interest your customers or leads.
+Content Instructions: Emphasize that SMS/Email flows are the engine of CRM revenue. 
+- Post-purchase flows for loyalty and product education.
+- The 4th Purchase Rule (loyal customers become brand evangelists).
 
 Brand: {BRAND}
 URL: {URL}
 
-Extracted Website Content & Meta Snippets:
+Extracted HTML Content Elements:
 {CONTENT}
+{DOM_SIGNALS}
 {SEO_SNIPPET}
 `;
 
@@ -95,6 +93,13 @@ export async function POST(req: Request) {
     affiliateKeywords.forEach(keyword => {
         if (homeHtmlLower.includes(keyword) && !affiliateProgramsFound.includes(keyword)) {
             affiliateProgramsFound.push(keyword);
+        }
+    });
+
+    $home('a').each((_, el) => {
+        const href = $home(el).attr('href')?.toLowerCase() || '';
+        if (href.includes('/pages/affiliate') || href.includes('/affiliate')) {
+            if (!affiliateProgramsFound.includes('Affiliate Landing Page')) affiliateProgramsFound.push('Affiliate Landing Page');
         }
     });
     
@@ -224,18 +229,33 @@ export async function POST(req: Request) {
     if (!process.env.ANTHROPIC_API_KEY) {
         analysisResult = JSON.stringify([{ title: "Error", content: "<p>LLM API Key missing. Growth analysis could not be generated.</p>" }]);
     } else {
+        const checkKeyword = (lowerHtml: string, keywords: string[]) => keywords.some(k => lowerHtml.includes(k));
+        let klaviyoStatus = checkKeyword(homeHtmlLower, ['klaviyo', 'klaviyo-form']) ? "Klaviyo JS/Forms Detected" : "No Klaviyo scripts visually detected in DOM";
+        let cartUpsells = [];
+        if (checkKeyword(homeHtmlLower, ['rebuy'])) cartUpsells.push('Rebuy (Upsell JS)');
+        if (checkKeyword(homeHtmlLower, ['recharge'])) cartUpsells.push('Recharge (Subscriptions)');
+        let upsellStatus = cartUpsells.length > 0 ? `Cart Extensibility: ${cartUpsells.join(', ')}` : "No explicit Rebuy/Recharge scripts detected.";
+        let quickpayUrls = [];
+        if (checkKeyword(homeHtmlLower, ['shop-pay', 'shop pay', 'cdn.shopify.com/s/javascripts/'])) quickpayUrls.push('Shop Pay');
+        if (checkKeyword(homeHtmlLower, ['paypal'])) quickpayUrls.push('PayPal');
+        if (checkKeyword(homeHtmlLower, ['apple-pay', 'applepay'])) quickpayUrls.push('Apple Pay');
+        let quickpayStatus = quickpayUrls.length > 0 ? `Quickpay Detected: ${quickpayUrls.join(', ')}` : "No direct Quickpay JS tokens found.";
+        
+        let domSignals = `Technical DOM Signals:\nAffiliates Status: ${affiliateProgramsFound.length > 0 ? affiliateProgramsFound.join(', ') : 'None'}\nLead Gen: ${klaviyoStatus}\nCart Upsells: ${upsellStatus}\nQuickpay: ${quickpayStatus}`;
+
         const prompt = GROWTH_AUDIT_PROMPT
             .replace(/{URL}/g, targetUrl)
             .replace(/{BRAND}/g, brandName)
             .replace('{SOCIALS}', socialLinks.length > 0 ? socialLinks.map(s => s.name).join(', ') : 'None Detected')
             .replace('{LOYALTY}', loyaltyFound.length > 0 ? loyaltyFound.join(', ') : 'No exact keywords matching rewards/loyalty/warranty found')
             .replace('{CONTENT}', textContent)
-            .replace('{QUIZ_STATUS}', quizStatus)
-            .replace('{PAGE_CONTEXT}', pageContext)
-            .replace('{ALT_TEXT_DATA}', altTextStr)
+            .replace('{KLAVIYO_STATUS}', klaviyoStatus)
+            .replace('{CART_UPSELL_STATUS}', upsellStatus)
+            .replace('{QUICKPAY_STATUS}', quickpayStatus)
+            .replace('{AFFILIATE_STATUS}', affiliateProgramsFound.length > 0 ? 'Active Program Found' : 'No Program Found')
+            .replace('{DOM_SIGNALS}', domSignals)
             .replace('{PAGESPEED_DATA}', pageSpeedStr)
-            .replace('{SEO_SNIPPET}', seoSnippet)
-            .replace('{FAQ_SCHEMA_STATUS}', faqStatus);
+            .replace('{SEO_SNIPPET}', seoSnippet);
 
         const anthropic = new Anthropic({ 
             apiKey: process.env.ANTHROPIC_API_KEY,

@@ -7,7 +7,7 @@ const montserrat = Montserrat({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'MHA Auditor | OmniChannel Marketing Scripts',
-  description: 'Generate high-converting custom Loom audit scripts in seconds for Marketing Hosting Agency.',
+  description: 'The MHA Intelligence Engine will rigorously audit their Mobile CRO, SEO architecture, Affiliate networks, and Paid Lifecycle flows to instantly architect an elite, board-level Omnichannel Growth Strategy.',
 };
 
 export default function RootLayout({

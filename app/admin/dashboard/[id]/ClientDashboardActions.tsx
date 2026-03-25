@@ -8,8 +8,15 @@ export default function ClientDashboardActions({ auditId }: { auditId: string })
   const [isCopied, setIsCopied] = useState(false);
   const router = useRouter();
 
-  const handleShare = () => {
-    const url = `${window.location.origin}/report/${auditId}`;
+  const handleShareMHA = () => {
+    const url = `${window.location.origin}/report/${auditId}?theme=mha`;
+    navigator.clipboard.writeText(url);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleShareSimplicity = () => {
+    const url = `${window.location.origin}/report/${auditId}?theme=simplicity`;
     navigator.clipboard.writeText(url);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
@@ -35,13 +42,20 @@ export default function ClientDashboardActions({ auditId }: { auditId: string })
 
   return (
     <div className="flex items-center gap-3">
-      <button 
-        onClick={handleShare}
-        className="bg-[#222] hover:bg-[#333] text-blue-400 font-bold text-sm tracking-tight py-2 px-4 rounded-lg transition-colors border border-blue-500/30 flex items-center gap-2"
-      >
-        {isCopied ? 'Copied Link!' : 'Share Report'}
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
-      </button>
+      <div className="flex bg-[#222] border border-[#f5ed38]/30 rounded-lg overflow-hidden">
+        <button 
+          onClick={handleShareMHA}
+          className="hover:bg-[#333] text-[#f5ed38] font-bold text-sm tracking-tight py-2 px-4 transition-colors border-r border-[#464646] flex items-center gap-2"
+        >
+          {isCopied ? 'Copied MHA!' : 'Copy MHA Link'}
+        </button>
+        <button 
+          onClick={handleShareSimplicity}
+          className="hover:bg-[#333] text-purple-400 font-bold text-sm tracking-tight py-2 px-4 transition-colors flex items-center gap-2"
+        >
+          {isCopied ? 'Copied SM!' : 'Copy Simplicity Link'}
+        </button>
+      </div>
 
       <button 
         onClick={handleDelete}

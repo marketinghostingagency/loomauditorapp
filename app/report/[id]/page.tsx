@@ -2,11 +2,19 @@ import { prisma } from '../../../lib/prisma';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AuditAccordion from '../../../components/AuditAccordion';
+import PrintButton from './PrintButton';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SharedAuditDetail(props: { params: Promise<{ id: string }> }) {
+export default async function SharedAuditDetail(props: { params: Promise<{ id: string }>, searchParams?: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const params = await props.params;
+  const searchParams = await props.searchParams;
+  const theme = searchParams?.theme === 'simplicity' ? 'simplicity' : 'mha';
+
+  const brandObj = theme === 'simplicity' 
+    ? { title: "Simplicity Media Growth Audit", accentColor: "text-purple-400", primaryGlow: "text-purple-400", bgGlow: "from-purple-600 via-purple-400 to-purple-600" }
+    : { title: "Marketing Science Growth Audit", accentColor: "text-[#f5ed38]", primaryGlow: "text-[#f5ed38]", bgGlow: "from-[#dc9f0f] via-[#f5ed38] to-[#dc9f0f]" };
+
   const audit = await prisma.audit.findUnique({
     where: { id: params.id }
   });
@@ -23,21 +31,24 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
   } catch(e) {}
 
   return (
-    <div className="min-h-screen bg-[#111111] text-slate-200 font-sans selection:bg-[#f5ed38] selection:text-black">
-      <nav className="glass-card sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-[#222222]">
-        <Link href="/" className="text-white font-bold text-xl tracking-tight hover:text-[#f5ed38] transition-colors flex items-center gap-2">
-          Marketing Science Growth Audit
+    <div className="min-h-screen bg-[#111111] text-slate-200 font-sans selection:bg-[#f5ed38] selection:text-black print:bg-white print:text-black">
+      <nav className="glass-card sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-[#222222] print:hidden">
+        <Link href="/" className={`text-white font-bold text-xl tracking-tight hover:${brandObj.accentColor} transition-colors flex items-center gap-2`}>
+          {brandObj.title}
         </Link>
-        <span className="text-xs text-slate-500 uppercase tracking-widest font-bold">Report ID: {audit.id.split('-')[0]}</span>
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-slate-500 uppercase tracking-widest font-bold hidden md:inline-block">Report ID: {audit.id.split('-')[0]}</span>
+          <PrintButton />
+        </div>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-6 py-12 pb-24">
-        <header className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
-            Audit Insight: <span className="text-[#f5ed38]">{audit.brandName}</span>
+      <main className="max-w-6xl mx-auto px-6 py-12 pb-24 print:p-0 print:m-0 print:max-w-none">
+        <header className="mb-12 print:mb-6">
+          <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 print:text-5xl print:text-black">
+            Audit Insight: <span className={brandObj.primaryGlow}>{audit.brandName}</span>
           </h1>
-          <div className="flex items-center gap-4 text-slate-400 font-medium">
-            <a href={audit.url} target="_blank" rel="noopener noreferrer" className="hover:text-[#dc9f0f] transition-colors flex items-center gap-1">
+          <div className="flex items-center gap-4 text-slate-400 font-medium print:text-slate-600">
+            <a href={audit.url} target="_blank" rel="noopener noreferrer" className="hover:text-[#dc9f0f] transition-colors flex items-center gap-1 print:text-black">
               {audit.apexDomain}
             </a>
             <span className="w-1.5 h-1.5 rounded-full bg-[#464646]"></span>
@@ -114,14 +125,14 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
         )}
 
         {audit.aiAnalysis && (
-          <div className="glass-card rounded-2xl p-6 md:p-10 border border-[#464646] shadow-xl relative overflow-hidden mb-8">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#dc9f0f] via-[#f5ed38] to-[#dc9f0f]"></div>
+          <div className="glass-card rounded-2xl p-6 md:p-10 border border-[#464646] shadow-xl relative overflow-hidden mb-8 print:border-none print:shadow-none print:p-0 print:bg-white print:text-black">
+            <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${brandObj.bgGlow} print:hidden`}></div>
             
             <div className="flex flex-col gap-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#464646]/50 pb-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#464646]/50 pb-6 print:hidden">
                 <div>
                   <h2 className="text-3xl font-black text-white tracking-tight mb-2">
-                    In-Depth <span className="text-[#f5ed38]">Growth Playbook</span>
+                    In-Depth <span className={brandObj.primaryGlow}>Growth Playbook</span>
                   </h2>
                   {audit.metaPixelFound ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
@@ -136,7 +147,8 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
                 </div>
               </div>
 
-              <AuditAccordion data={audit.aiAnalysis} rawFallback={audit.aiAnalysis || ''} />
+              {/* Ensure standard AuditAccordion prints open by forcing print classes in globals.css, or passing a prop. For now, globals.css will force max-height open when printing. */}
+              <AuditAccordion auditId={audit.id} data={audit.aiAnalysis} rawFallback={audit.aiAnalysis || ''} isEditable={false} />
             </div>
           </div>
         )}

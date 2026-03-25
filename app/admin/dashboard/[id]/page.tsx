@@ -96,8 +96,8 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
 
               {/* Sitemap */}
               {audit.sitemapXml && (
-                <a href={`data:application/xml;base64,${audit.sitemapXml}`} download={`sitemap-${audit.brandName}.xml`} className="bg-[#222] hover:bg-[#333] text-blue-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-blue-500/30">
-                  Download Sitemap XML
+                <a href={`data:text/csv;base64,${audit.sitemapXml}`} download={`sitemap-${audit.brandName}.csv`} className="bg-[#222] hover:bg-[#333] text-green-400 font-medium py-2 px-4 rounded-lg flex items-center justify-center transition-colors border border-green-500/30">
+                  Download Sitemap CSV
                 </a>
               )}
 
@@ -138,7 +138,7 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
                 </div>
               </div>
 
-              <AuditAccordion data={audit.aiAnalysis} rawFallback={audit.aiAnalysis || ''} />
+              <AuditAccordion auditId={audit.id} data={audit.aiAnalysis} rawFallback={audit.aiAnalysis || ''} isEditable={true} />
             </div>
           </div>
         )}
