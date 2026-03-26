@@ -24,7 +24,7 @@ jobs:
             git pull origin main
             
             # Install any new dependencies
-            npm install
+            npm install --legacy-peer-deps
             
             # Rebuild the Next.js application cache
             npm run build
