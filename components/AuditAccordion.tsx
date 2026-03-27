@@ -18,7 +18,10 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
   const [sections, setSections] = useState<any[] | null>(() => {
     try {
       const p = typeof data === 'string' ? JSON.parse(data) : data;
-      return Array.isArray(p) ? p : null;
+      if (Array.isArray(p)) {
+         return p.map(s => ({ ...s, content: s.content.replace(/style="color: #f5ed38;"/g, '') }));
+      }
+      return null;
     } catch(e) { return null; }
   });
 

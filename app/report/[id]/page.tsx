@@ -58,7 +58,10 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
     <div className={`min-h-screen ${brandObj.bgMain} ${brandObj.textMain} font-sans selection:bg-[#f5ed38] selection:text-black print:bg-white print:text-black transition-colors`}>
       {isSimplicity ? (
         <nav className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm print:hidden">
-          <img src={brandObj.logoUrl!} alt="Simplicity Media" className="h-8 md:h-10 object-contain" />
+          <div className="flex flex-col justify-center select-none">
+            <span className="text-[#07004C] font-black tracking-tighter text-2xl leading-none">SIMPLICITY</span>
+            <span className="text-[#116dff] font-bold tracking-[0.25em] text-[0.65rem] uppercase pl-1">Media</span>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-slate-500 uppercase tracking-widest font-bold hidden md:inline-block">Report ID: {audit.id.split('-')[0]}</span>
             <PrintButton />

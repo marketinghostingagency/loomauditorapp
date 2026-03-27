@@ -24,7 +24,7 @@ export default function RootLayout({
           <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-[#dc9f0f] rounded-full mix-blend-screen filter blur-[150px] opacity-[0.05] animate-blob animation-delay-4000"></div>
         </div>
         
-        <header className="w-full bg-[#111111]/90 backdrop-blur-md border-b border-[#333]/50 flex items-center justify-between h-20 px-6 sticky top-0 z-50 shadow-xl">
+        <header className="w-full bg-[#111111]/90 backdrop-blur-md border-b border-[#333]/50 flex items-center justify-between h-20 px-6 sticky top-0 z-50 shadow-xl print:hidden">
           <Link href="/" className="flex items-center gap-4 hover:opacity-80 transition-opacity cursor-pointer">
             <img src="/mha-logo2.png" alt="Marketing Hosting Agency" className="h-10 object-contain" />
             <div className="h-8 w-px bg-slate-700 mx-2"></div>
