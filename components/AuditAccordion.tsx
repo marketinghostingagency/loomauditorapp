@@ -1,10 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import 'react-quill/dist/quill.snow.css';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import DefaultEditor from 'react-simple-wysiwyg';
 
 interface AuditAccordionProps {
   auditId: string;
@@ -31,7 +28,6 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
   const headerBg = isSimplicity ? 'hover:bg-slate-50 text-[#07004C]' : 'hover:bg-[#222] text-white';
   const textBody = isSimplicity ? 'text-[#07004C]' : 'text-slate-200';
   const accentColor = isSimplicity ? 'text-[#116dff]' : 'text-[#f5ed38]';
-  // Specific override for bold tags depending on theme
   const boldTagColor = isSimplicity ? '[&_strong]:text-[#116dff]' : '[&_strong]:text-[#f5ed38]';
 
   const toggleIndex = (idx: number) => {
@@ -73,16 +69,6 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
     );
   }
 
-  // Define simplified WYSIWYG options for the client
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['clean']
-    ],
-  };
-
   return (
     <div className="w-full space-y-4">
       {isEditable && (
@@ -108,7 +94,7 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
         return (
           <div key={idx} className={`border rounded-xl overflow-hidden transition-all ${cardBg} print:shadow-none print:border-none print:bg-white print:text-black`}>
             {isEditing ? (
-              // EDITABLE VIEW (Title input + React Quill)
+              // EDITABLE VIEW (Title input + React Simple WYSIWYG)
               <div className="p-6">
                  <input 
                    type="text" 
@@ -120,13 +106,10 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
                    }}
                    className={`w-full text-xl font-bold p-2 mb-4 bg-transparent border-b focus:outline-none ${isSimplicity ? 'text-[#07004C] border-slate-200 focus:border-[#116dff]' : 'text-white border-[#464646] focus:border-[#f5ed38]'}`}
                  />
-                 <div className={isSimplicity ? 'quill-simplicity' : 'quill-mha'}>
-                    <ReactQuill 
-                      theme="snow"
+                 <div className={`mt-4 rounded-lg overflow-hidden border ${isSimplicity ? 'border-slate-300 bg-white text-black' : 'border-[#464646] bg-black/40 text-black [&_.rsw-editor]:text-white [&_.rsw-toolbar]:bg-[#222] [&_.rsw-toolbar_button]:text-white'}`}>
+                    <DefaultEditor 
                       value={section.content}
-                      onChange={(content) => handleContentChange(idx, content)}
-                      modules={modules}
-                      className="bg-transparent"
+                      onChange={(e) => handleContentChange(idx, e.target.value)}
                     />
                  </div>
               </div>
@@ -148,7 +131,6 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
                   </svg>
                 </button>
                 
-                {/* The Print heading only shows during PDF/Print rendering so the title isn't lost when the button is hidden */}
                 <h3 className="hidden print:block text-2xl font-bold text-black border-b border-black pb-2 mb-4 mt-6">
                   {section.title.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"')}
                 </h3>
