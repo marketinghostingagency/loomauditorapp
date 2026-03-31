@@ -26,6 +26,10 @@ jobs:
             # Install any new dependencies
             npm install --legacy-peer-deps
             
+            # Update the SQLite database schema
+            npx prisma generate
+            npx prisma db push --accept-data-loss
+            
             # Rebuild the Next.js application cache
             npm run build
             
