@@ -31,3 +31,11 @@ model Lead {
   auditId   String?
   createdAt DateTime @default(now())
 }
+
+model StyleRule {
+  id        String   @id @default(cuid())
+  section   String
+  rule      String
+  createdAt DateTime @default(now())
+}
+

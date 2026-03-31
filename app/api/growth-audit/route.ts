@@ -54,6 +54,8 @@ Extracted HTML Content Elements:
 {CONTENT}
 {DOM_SIGNALS}
 {SEO_SNIPPET}
+
+{STYLE_RULES}
 `;
 
 export async function POST(req: Request) {
@@ -188,7 +190,14 @@ export async function POST(req: Request) {
     // 4. Technical checks (Pixel, Shopify, Schema)
     const checkPixel = (htmlSource: string) => {
       const lower = htmlSource.toLowerCase();
-      return lower.includes('fbq(') || lower.includes('fbevents.js') || lower.includes('web-pixels-manager') || lower.includes('googletagmanager.com/gtm.js');
+      return lower.includes('fbq(') || 
+             lower.includes('fbevents.js') || 
+             lower.includes('web-pixels-manager') || 
+             lower.includes('googletagmanager.com/gtm.js') ||
+             lower.includes('tealium') ||
+             lower.includes('ensighten') ||
+             lower.includes('segment.com/analytics.js') ||
+             lower.includes('assets.adobedtm.com');
     };
     const isShopify = homeHtml.toLowerCase().includes('myshopify.com');
     const metaPixelFound = checkPixel(homeHtml) || (landingHtml ? checkPixel(landingHtml) : false);
@@ -249,6 +258,19 @@ export async function POST(req: Request) {
         
         let domSignals = `Technical DOM Signals:\nAffiliates Status: ${affiliateProgramsFound.length > 0 ? affiliateProgramsFound.join(', ') : 'None'}\nLead Gen: ${klaviyoStatus}\nCart Upsells: ${upsellStatus}\nQuickpay: ${quickpayStatus}`;
 
+        let styleRulesStr = "";
+        try {
+            const rules = await prisma.styleRule.findMany({
+                orderBy: { createdAt: 'desc' },
+                take: 20
+            });
+            if (rules.length > 0) {
+                styleRulesStr = "\n--- CRITICAL STYLE RULES (LEARNED FROM PAST EDITS) ---\nThe following stylistic rules must be STRICTLY adhered to. Limit superlatives if told to. Follow these user preferences exactly:\n" + rules.map((r: { section: string, rule: string }) => `- [${r.section}] ${r.rule}`).join('\n');
+            }
+        } catch(e) {
+            console.error("Failed to fetch style rules", e);
+        }
+
         const prompt = GROWTH_AUDIT_PROMPT
             .replace(/{URL}/g, targetUrl)
             .replace(/{BRAND}/g, brandName)
@@ -261,7 +283,8 @@ export async function POST(req: Request) {
             .replace('{AFFILIATE_STATUS}', affiliateProgramsFound.length > 0 ? 'Active Program Found' : 'No Program Found')
             .replace('{DOM_SIGNALS}', domSignals)
             .replace('{PAGESPEED_DATA}', pageSpeedStr)
-            .replace('{SEO_SNIPPET}', seoSnippet);
+            .replace('{SEO_SNIPPET}', seoSnippet)
+            .replace('{STYLE_RULES}', styleRulesStr);
 
         const anthropic = new Anthropic({ 
             apiKey: process.env.ANTHROPIC_API_KEY,

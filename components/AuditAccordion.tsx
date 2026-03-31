@@ -99,16 +99,30 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
             {isEditing ? (
               // EDITABLE VIEW (Title input + React Simple WYSIWYG)
               <div className="p-6">
-                 <input 
-                   type="text" 
-                   value={section.title}
-                   onChange={(e) => {
-                     const newSections = [...sections];
-                     newSections[idx].title = e.target.value;
-                     setSections(newSections);
-                   }}
-                   className={`w-full text-xl font-bold p-2 mb-4 bg-transparent border-b focus:outline-none ${isSimplicity ? 'text-[#07004C] border-slate-200 focus:border-[#116dff]' : 'text-white border-[#464646] focus:border-[#f5ed38]'}`}
-                 />
+                 <div className="flex justify-between items-center gap-4 mb-4">
+                   <input 
+                     type="text" 
+                     value={section.title}
+                     onChange={(e) => {
+                       const newSections = [...sections];
+                       newSections[idx].title = e.target.value;
+                       setSections(newSections);
+                     }}
+                     className={`w-full text-xl font-bold p-2 bg-transparent border-b focus:outline-none ${isSimplicity ? 'text-[#07004C] border-slate-200 focus:border-[#116dff]' : 'text-white border-[#464646] focus:border-[#f5ed38]'}`}
+                   />
+                   <button 
+                     onClick={() => {
+                       if (confirm('Are you sure you want to delete this section?')) {
+                         const newSections = [...sections];
+                         newSections.splice(idx, 1);
+                         setSections(newSections);
+                       }
+                     }}
+                     className="px-3 py-1.5 text-sm bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white rounded transition-colors whitespace-nowrap"
+                   >
+                     Delete Section
+                   </button>
+                 </div>
                  <div className={`mt-4 rounded-lg overflow-hidden border ${isSimplicity ? 'border-slate-300 bg-white text-black' : 'border-[#464646] bg-black/40 text-black [&_.rsw-editor]:text-white [&_.rsw-toolbar]:bg-[#222] [&_.rsw-toolbar_button]:text-white'}`}>
                     <DefaultEditor 
                       value={section.content}
@@ -151,6 +165,19 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
           </div>
         );
       })}
+
+      {isEditing && (
+        <button 
+          onClick={() => {
+            setSections([...sections, { title: 'New Section', content: '<p>Write your insights here...</p>' }]);
+            setOpenIndices([...openIndices, sections.length]);
+          }}
+          className={`w-full flex items-center justify-center p-4 border-2 border-dashed rounded-xl font-bold transition-colors print:hidden ${isSimplicity ? 'border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-[#116dff] hover:border-[#116dff]' : 'border-[#464646] text-slate-400 hover:bg-[#222] hover:text-[#f5ed38] hover:border-[#f5ed38]'}`}
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+          Add New Section
+        </button>
+      )}
     </div>
   );
 }
