@@ -195,9 +195,9 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
         )}
 
         {audit.aiAnalysis && (
-          <div className={`${brandObj.bgCard} rounded-2xl p-6 md:p-10 border ${brandObj.borderCard} shadow-xl relative overflow-hidden mb-8 print:border-none print:shadow-none print:p-0 print:bg-white print:text-black`}>
+          <div className={`${brandObj.bgCard} rounded-2xl p-6 md:p-10 border ${brandObj.borderCard} shadow-xl relative mb-8 print:border-none print:shadow-none print:p-0 print:bg-white print:text-black`}>
             {/* Top Glow bar */}
-            <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${brandObj.bgGlow} print:hidden`}></div>
+            <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${brandObj.bgGlow} rounded-t-2xl print:hidden`}></div>
             
             <div className="flex flex-col gap-6">
               <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6 print:hidden ${isSimplicity ? 'border-slate-200' : 'border-[#464646]/50'}`}>

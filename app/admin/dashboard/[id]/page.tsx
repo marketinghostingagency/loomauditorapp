@@ -161,8 +161,8 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
         )}
 
         {audit.aiAnalysis && (
-          <div className="glass-card rounded-2xl p-6 md:p-10 border border-[#464646] shadow-xl relative overflow-hidden mb-8">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#dc9f0f] via-[#f5ed38] to-[#dc9f0f]"></div>
+          <div className="glass-card rounded-2xl p-6 md:p-10 border border-[#464646] shadow-xl relative mb-8">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#dc9f0f] via-[#f5ed38] to-[#dc9f0f] rounded-t-2xl"></div>
             
             <div className="flex flex-col gap-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#464646]/50 pb-6">
