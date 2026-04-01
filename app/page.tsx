@@ -82,7 +82,7 @@ export default function Home() {
           </div>
           <h2 className="text-3xl font-black text-white">Analysis In Progress</h2>
           <p className="text-lg text-slate-400">
-             The MHA Intelligence Engine is currently processing {brand}'s footprint. Because this is a master-level audit, this process takes time. We will email a secure link to your executive report to <strong>{email}</strong> as soon as it is ready for your review.
+             The MHA Intelligence Engine is currently processing {brand}'s footprint. Because this is a master-level audit, this process takes time. Once completed and ready for review, you'll be emailed a secure link to your executive report.
           </p>
           <button onClick={() => { setIsSuccess(false); setShowModal(false); }} className="mt-8 px-6 py-3 bg-[#f5ed38] hover:bg-[#dc9f0f] text-black font-bold rounded-xl transition-colors">
             Audit Another Brand
