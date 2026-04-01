@@ -73,18 +73,18 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 relative">
       {isEditable && (
-        <div className="flex justify-end mb-4 gap-3 print:hidden">
+        <div className={`sticky top-20 z-50 flex justify-end mb-6 gap-3 p-4 rounded-xl backdrop-blur-xl border shadow-xl print:hidden transition-all ${isSimplicity ? 'bg-white/90 border-[#116dff]/20' : 'bg-[#111111]/90 border-[#464646]'}`}>
           {isEditing ? (
             <>
-              <button onClick={() => setIsEditing(false)} className={`px-4 py-2 border rounded-lg transition-colors ${isSimplicity ? 'border-slate-300 text-slate-600 hover:bg-slate-100' : 'border-[#464646] text-white hover:bg-[#222]'}`}>Cancel</button>
-              <button onClick={handleSave} disabled={isSaving} className={`px-4 py-2 font-bold flex gap-2 items-center rounded-lg transition-colors ${isSimplicity ? 'bg-[#116dff] text-white hover:bg-blue-600' : 'bg-[#dc9f0f] text-black hover:bg-[#f5ed38]'}`}>
+              <button onClick={() => setIsEditing(false)} className={`px-4 py-2 border rounded-lg transition-colors font-medium cursor-pointer ${isSimplicity ? 'border-slate-300 text-slate-600 hover:bg-slate-100' : 'border-[#464646] text-white hover:bg-[#222]'}`}>Cancel</button>
+              <button onClick={handleSave} disabled={isSaving} className={`px-4 py-2 font-black flex gap-2 items-center rounded-lg transition-colors shadow-lg cursor-pointer ${isSimplicity ? 'bg-[#116dff] text-white hover:bg-blue-600 shadow-blue-500/20' : 'bg-[#dc9f0f] text-black hover:bg-[#f5ed38] shadow-[#f5ed38]/10'}`}>
                  {isSaving ? 'Saving...' : 'Save Audit Updates'}
               </button>
             </>
           ) : (
-            <button onClick={() => { setIsEditing(true); setOpenIndices(sections.map((_, i) => i)); }} className={`px-4 py-2 font-bold rounded-lg flex items-center gap-2 transition-colors border ${isSimplicity ? 'bg-white border-[#116dff]/50 text-[#116dff] hover:bg-blue-50' : 'bg-[#222] border-[#f5ed38]/50 text-[#f5ed38] hover:bg-[#333]'}`}>
+            <button onClick={() => { setIsEditing(true); setOpenIndices(sections.map((_, i) => i)); }} className={`px-4 py-2 font-bold rounded-lg flex items-center gap-2 transition-colors border shadow-lg cursor-pointer ${isSimplicity ? 'bg-white border-[#116dff]/50 text-[#116dff] hover:bg-blue-50 shadow-blue-500/10' : 'bg-[#222] border-[#f5ed38]/50 text-[#f5ed38] hover:bg-[#333] shadow-[#f5ed38]/5'}`}>
                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                Edit Report Content
             </button>
@@ -95,11 +95,11 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
       {sections.map((section: any, idx: number) => {
         const isOpen = openIndices.includes(idx);
         return (
-          <div key={idx} className={`border rounded-xl overflow-hidden transition-all ${cardBg} print:shadow-none print:border-none print:bg-white print:text-black`}>
+          <div key={idx} className={`border rounded-xl transition-all ${cardBg} print:shadow-none print:border-none print:bg-white print:text-black`}>
             {isEditing ? (
               // EDITABLE VIEW (Title input + React Simple WYSIWYG)
               <div className="p-6">
-                 <div className="flex justify-between items-center gap-4 mb-4">
+                 <div className={`sticky top-[155px] z-40 flex justify-between items-center gap-4 mb-4 p-4 -mt-4 -mx-4 rounded-xl border backdrop-blur-xl shadow-md transition-colors ${isSimplicity ? 'bg-slate-50/95 border-slate-200' : 'bg-[#222222]/95 border-[#464646]'}`}>
                    <input 
                      type="text" 
                      value={section.title}
@@ -108,7 +108,7 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
                        newSections[idx].title = e.target.value;
                        setSections(newSections);
                      }}
-                     className={`w-full text-xl font-bold p-2 bg-transparent border-b focus:outline-none ${isSimplicity ? 'text-[#07004C] border-slate-200 focus:border-[#116dff]' : 'text-white border-[#464646] focus:border-[#f5ed38]'}`}
+                     className={`w-full text-xl font-bold p-2 bg-transparent border-b focus:outline-none ${isSimplicity ? 'text-[#07004C] border-slate-300 focus:border-[#116dff]' : 'text-white border-[#555] focus:border-[#f5ed38]'}`}
                    />
                    <div className="flex items-center gap-2">
                      <button 
@@ -167,9 +167,9 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
               <>
                 <button 
                   onClick={() => toggleIndex(idx)}
-                  className={`w-full flex items-center justify-between p-6 text-left focus:outline-none transition-colors ${headerBg} print:hidden`}
+                  className={`w-full flex items-center justify-between p-6 text-left focus:outline-none transition-colors sticky top-[80px] z-40 border-b backdrop-blur-xl print:hidden ${isSimplicity ? 'bg-white/95 border-slate-200 hover:bg-slate-50' : 'bg-[#1a1a1a]/95 border-[#464646] hover:bg-[#222]'} ${!isOpen ? 'rounded-b-xl border-b-0' : 'rounded-t-xl'}`}
                 >
-                  <h3 className="text-xl font-bold text-left max-w-2xl leading-tight">
+                  <h3 className={`text-xl font-bold text-left max-w-2xl leading-tight ${isSimplicity ? 'text-[#07004C]' : 'text-white'}`}>
                      {section.title.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"')}
                   </h3>
                   <svg 

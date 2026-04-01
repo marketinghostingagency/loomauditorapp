@@ -8,6 +8,15 @@ export default async function AdminDashboard() {
     orderBy: { createdAt: 'desc' },
   });
 
+  const leads = await prisma.lead.findMany({
+    where: { auditId: { in: audits.map((a: any) => a.id) } }
+  });
+
+  const auditsWithLeads = audits.map((audit: any) => ({
+    ...audit,
+    lead: leads.find((l: any) => l.auditId === audit.id)
+  }));
+
   return (
     <div className="min-h-screen p-8 text-white">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -27,12 +36,13 @@ export default async function AdminDashboard() {
                 <th className="p-5 font-bold text-slate-300">Date Generated</th>
                 <th className="p-5 font-bold text-slate-300">Brand</th>
                 <th className="p-5 font-bold text-slate-300">Target URL</th>
+                <th className="p-5 font-bold text-slate-300">Target Contact</th>
                 <th className="p-5 font-bold text-slate-300">Delivery</th>
                 <th className="p-5 font-bold text-slate-300">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#464646]">
-              {audits.map((audit: any) => (
+              {auditsWithLeads.map((audit: any) => (
                 <tr key={audit.id} className="hover:bg-white/5 transition-colors group">
                   <td className="p-5 text-sm text-slate-400">
                     {new Date(audit.createdAt).toLocaleDateString()}
@@ -42,6 +52,16 @@ export default async function AdminDashboard() {
                     <a href={audit.url} target="_blank" rel="noopener noreferrer" className="text-[#f5ed38] hover:text-white transition-colors underline-offset-4 group-hover:underline">
                       {audit.url}
                     </a>
+                  </td>
+                  <td className="p-5">
+                    {audit.lead ? (
+                       <div className="flex flex-col">
+                         <span className="text-sm font-bold text-[#f5ed38]">{audit.lead.name}</span>
+                         <a href={`mailto:${audit.lead.email}`} className="text-xs text-slate-400 hover:text-white underline underline-offset-2">{audit.lead.email}</a>
+                       </div>
+                    ) : (
+                       <span className="text-xs text-slate-600 block italic">Orphaned Audit (No Lead)</span>
+                    )}
                   </td>
                   <td className="p-5">
                      {audit.sentAt ? (
@@ -67,9 +87,9 @@ export default async function AdminDashboard() {
                   </td>
                 </tr>
               ))}
-              {audits.length === 0 && (
+              {auditsWithLeads.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-slate-500">
+                  <td colSpan={6} className="p-12 text-center text-slate-500">
                     <svg className="w-12 h-12 mx-auto text-slate-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                     No audits generated yet. Once someone generates an audit on the homepage, it will appear here permanently.
                   </td>

@@ -1,0 +1,14 @@
+name: Hourly Audit Reminders
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-cron:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping MHA Cron API
+        run: |
+          curl -X GET "https://audit.marketinghosting.agency/api/cron/reminders?key=mha-cron-fallback-999"

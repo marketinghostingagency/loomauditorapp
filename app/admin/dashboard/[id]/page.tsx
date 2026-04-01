@@ -13,6 +13,11 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
     where: { id: params.id }
   });
 
+  const lead = await prisma.lead.findFirst({
+    where: { auditId: params.id },
+    orderBy: { createdAt: 'desc' }
+  });
+
   if (!audit) {
     notFound();
   }
@@ -38,13 +43,53 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
           <h1 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
             Audit Insight: <span className="text-[#f5ed38]">{audit.brandName}</span>
           </h1>
-          <div className="flex items-center gap-4 text-slate-400 font-medium">
+          <div className="flex items-center gap-4 text-slate-400 font-medium mb-6">
             <a href={audit.url} target="_blank" rel="noopener noreferrer" className="hover:text-[#dc9f0f] transition-colors flex items-center gap-1">
               {audit.apexDomain}
             </a>
             <span className="w-1.5 h-1.5 rounded-full bg-[#464646]"></span>
             <span>{new Date(audit.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
           </div>
+
+          {/* CRM LEAD DETAILS CARD */}
+          {lead && (
+             <div className="flex bg-[#222222] border border-[#f5ed38]/30 p-5 rounded-2xl items-center justify-between shadow-2xl relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-[#dc9f0f] rounded-full blur-[80px] opacity-10"></div>
+               
+               <div className="flex flex-col relative z-10">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Target Contact Details</span>
+                  <span className="text-xl font-black text-white leading-tight">{lead.name}</span>
+                  <div className="flex items-center gap-3 text-sm text-[#f5ed38] mt-1 font-medium">
+                     <a href={`mailto:${lead.email}`} className="hover:text-white transition-colors flex items-center gap-1">
+                        <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        {lead.email}
+                     </a>
+                     {lead.phone && (
+                        <>
+                          <span className="w-1 h-1 rounded-full bg-[#464646]"></span>
+                          <a href={`tel:${lead.phone}`} className="hover:text-white transition-colors flex items-center gap-1">
+                             <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                             {lead.phone}
+                          </a>
+                        </>
+                     )}
+                  </div>
+               </div>
+               
+               <div className="flex flex-col items-end text-right relative z-10 hidden sm:flex">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Delivery Status</span>
+                  {audit.sentAt ? (
+                     <span className="px-4 py-1.5 bg-green-500/10 text-green-400 text-xs font-black rounded-lg border border-green-500/30 uppercase tracking-widest shadow-lg">
+                       Sent via {audit.sentTheme === 'mha' ? 'MHA' : 'Simplicity'}
+                     </span>
+                  ) : (
+                     <span className="px-4 py-1.5 bg-red-500/10 text-red-500 text-xs font-black rounded-lg border border-red-500/30 uppercase tracking-widest shadow-lg animate-pulse">
+                       Not Sent
+                     </span>
+                  )}
+               </div>
+             </div>
+          )}
         </header>
 
         {/* Dynamic Research Hub & Ad Library Quick Links */}
