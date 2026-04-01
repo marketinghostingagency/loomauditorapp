@@ -110,18 +110,50 @@ export default function AuditAccordion({ auditId, data, rawFallback, isEditable 
                      }}
                      className={`w-full text-xl font-bold p-2 bg-transparent border-b focus:outline-none ${isSimplicity ? 'text-[#07004C] border-slate-200 focus:border-[#116dff]' : 'text-white border-[#464646] focus:border-[#f5ed38]'}`}
                    />
-                   <button 
-                     onClick={() => {
-                       if (confirm('Are you sure you want to delete this section?')) {
+                   <div className="flex items-center gap-2">
+                     <button 
+                       onClick={() => {
+                         if (idx === 0) return;
                          const newSections = [...sections];
-                         newSections.splice(idx, 1);
+                         const temp = newSections[idx - 1];
+                         newSections[idx - 1] = newSections[idx];
+                         newSections[idx] = temp;
                          setSections(newSections);
-                       }
-                     }}
-                     className="px-3 py-1.5 text-sm bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white rounded transition-colors whitespace-nowrap"
-                   >
-                     Delete Section
-                   </button>
+                       }}
+                       disabled={idx === 0}
+                       className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${isSimplicity ? 'text-slate-400 hover:text-[#116dff] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-[#222]'}`}
+                       title="Move Up"
+                     >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7"></path></svg>
+                     </button>
+                     <button 
+                       onClick={() => {
+                         if (idx === sections.length - 1) return;
+                         const newSections = [...sections];
+                         const temp = newSections[idx + 1];
+                         newSections[idx + 1] = newSections[idx];
+                         newSections[idx] = temp;
+                         setSections(newSections);
+                       }}
+                       disabled={idx === sections.length - 1}
+                       className={`p-1.5 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${isSimplicity ? 'text-slate-400 hover:text-[#116dff] hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-[#222]'}`}
+                       title="Move Down"
+                     >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                     </button>
+                     <button 
+                       onClick={() => {
+                         if (confirm('Are you sure you want to delete this section?')) {
+                           const newSections = [...sections];
+                           newSections.splice(idx, 1);
+                           setSections(newSections);
+                         }
+                       }}
+                       className="px-3 py-1.5 text-sm bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white rounded transition-colors whitespace-nowrap ml-2"
+                     >
+                       Delete
+                     </button>
+                   </div>
                  </div>
                  <div className={`mt-4 rounded-lg overflow-hidden border ${isSimplicity ? 'border-slate-300 bg-white text-black' : 'border-[#464646] bg-black/40 text-black [&_.rsw-editor]:text-white [&_.rsw-toolbar]:bg-[#222] [&_.rsw-toolbar_button]:text-white'}`}>
                     <DefaultEditor 

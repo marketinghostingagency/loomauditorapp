@@ -27,7 +27,7 @@ export default async function AdminDashboard() {
                 <th className="p-5 font-bold text-slate-300">Date Generated</th>
                 <th className="p-5 font-bold text-slate-300">Brand</th>
                 <th className="p-5 font-bold text-slate-300">Target URL</th>
-                <th className="p-5 font-bold text-slate-300">Growth Module</th>
+                <th className="p-5 font-bold text-slate-300">Delivery</th>
                 <th className="p-5 font-bold text-slate-300">Action</th>
               </tr>
             </thead>
@@ -44,15 +44,20 @@ export default async function AdminDashboard() {
                     </a>
                   </td>
                   <td className="p-5">
-                    {audit.aiAnalysis ? (
-                      <span className="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 text-xs font-bold rounded-lg border border-cyan-500/20 uppercase tracking-wider">
-                        Available
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1.5 bg-slate-500/10 text-slate-500 text-xs font-bold rounded-lg border border-slate-500/20 uppercase tracking-wider">
-                        Pending
-                      </span>
-                    )}
+                     {audit.sentAt ? (
+                       <div className="flex flex-col gap-1">
+                          <span className="px-2 py-1 bg-green-500/10 text-green-400 text-[10px] font-bold rounded border border-green-500/20 uppercase w-fit tracking-wider">
+                            Sent ({audit.sentTheme === 'mha' ? 'MHA' : 'Simplicity'})
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-medium whitespace-nowrap">
+                             {new Date(audit.sentAt).toLocaleDateString()}
+                          </span>
+                       </div>
+                     ) : (
+                       <span className="px-2 py-1 bg-slate-500/10 text-slate-500 text-[10px] font-bold rounded border border-slate-500/20 uppercase tracking-wider">
+                         Unsent
+                       </span>
+                     )}
                   </td>
                   <td className="p-5">
                     <Link href={`/admin/dashboard/${audit.id}`} className="text-[#f5ed38] hover:text-[#dc9f0f] text-sm font-bold flex items-center gap-1.5 transition-colors">

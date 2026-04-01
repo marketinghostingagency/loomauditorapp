@@ -55,7 +55,44 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
   } catch(e) {}
 
   return (
-    <div className={`min-h-screen ${brandObj.bgMain} ${brandObj.textMain} font-sans selection:bg-[#f5ed38] selection:text-black print:bg-white print:text-black transition-colors`}>
+    <div className={`min-h-screen ${brandObj.bgMain} ${brandObj.textMain} font-sans selection:bg-[#f5ed38] selection:text-black print:bg-white print:text-black transition-colors relative`}>
+      {/* NATIVE PDF MULTI-PAGE PRINT HEADER HACK */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          @page {
+            margin-top: 25mm !important;
+            margin-bottom: 20mm !important;
+          }
+          .print-fixed-header {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            border-bottom: 2px solid ${isSimplicity ? '#116dff' : '#000'} !important;
+            padding-bottom: 15px !important;
+            padding-top: 10px !important;
+            z-index: 9999 !important;
+          }
+          body {
+            padding-top: 25mm !important;
+          }
+        }
+      `}} />
+      <div className="hidden print-fixed-header">
+         <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Growth Playbook / {audit.brandName}</div>
+         {brandObj.logoUrl ? (
+             <img src={brandObj.logoUrl} className="h-6 object-contain" alt={brandObj.title} />
+         ) : (
+             <div className="text-[14px] font-black tracking-tighter text-black uppercase">
+                Marketing Hosting<span className="text-[#dc9f0f]">Agency</span>
+             </div>
+         )}
+      </div>
+
       {isSimplicity ? (
         <nav className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm print:hidden">
           <div className="flex flex-col justify-center select-none">

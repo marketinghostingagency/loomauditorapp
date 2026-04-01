@@ -22,20 +22,24 @@ export async function PATCH(req: Request, props: { params: Promise<{ id: string 
   try {
     const params = await props.params;
     const { id } = params;
-    const { aiAnalysis } = await req.json();
+    const { aiAnalysis, script } = await req.json();
 
-    if (!aiAnalysis) {
-      return NextResponse.json({ error: 'aiAnalysis payload is required' }, { status: 400 });
+    if (!aiAnalysis && script === undefined) {
+      return NextResponse.json({ error: 'payload is required' }, { status: 400 });
     }
+
+    const dataToUpdate: any = {};
+    if (aiAnalysis) dataToUpdate.aiAnalysis = JSON.stringify(aiAnalysis);
+    if (script !== undefined) dataToUpdate.script = script;
 
     const oldAudit = await prisma.audit.findUnique({
       where: { id },
-      select: { aiAnalysis: true }
+      select: { aiAnalysis: true, script: true }
     });
 
     const updatedAudit = await prisma.audit.update({
       where: { id },
-      data: { aiAnalysis: JSON.stringify(aiAnalysis) }
+      data: dataToUpdate
     });
 
     // Background learning extraction
@@ -94,6 +98,41 @@ If the edit was just correcting a factual error, adding a sentence, or a minor t
       } catch (err) {
          console.error("Failed to extract learnings from edit", err);
       }
+    }
+
+    // Background learning for Pitch Script
+    if (script !== undefined && oldAudit?.script && script !== oldAudit.script && process.env.ANTHROPIC_API_KEY) {
+        try {
+            const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+            const prompt = `You are an AI that extracts stylistic rules from document edits.
+A user has just edited a "Pitch Script" in a Growth Audit.
+We want to learn the USER'S PREFERRED TASTE from this edit.
+
+--- ORIGINAL AI CONTENT ---
+${oldAudit.script}
+
+--- USER EDITED CONTENT ---
+${script}
+
+Analyze the changes. What is ONE clear, concise instruction about the user's preferred tone, style, or formatting based on this edit?
+If the edit was just correcting a factual error, adding a sentence, or a minor typo, and there is no general style rule to extract, output exactly "NONE". Otherwise, output the rule and nothing else.`;
+
+            const message = await anthropic.messages.create({
+              max_tokens: 200,
+              messages: [{ role: 'user', content: prompt }],
+              model: 'claude-3-haiku-20240307',
+            });
+            
+            const rule = message.content[0].type === 'text' ? message.content[0].text : "NONE";
+            if (rule.trim() !== "NONE" && !rule.toUpperCase().includes("NONE")) {
+                await prisma.styleRule.create({
+                  data: { section: "Pitch Script", rule: rule.trim() }
+                });
+                console.log("Learned new style rule for Pitch Script:", rule);
+            }
+        } catch(err) {
+            console.error("Failed to extract learnings from pitch script", err);
+        }
     }
 
     return NextResponse.json({ success: true, audit: updatedAudit });

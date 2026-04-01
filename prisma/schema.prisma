@@ -20,6 +20,8 @@ model Audit {
   landingPageUrl    String?
   socialLinks       String?  // JSON stringified array of social profiles
   aiAnalysis        String?
+  sentAt            DateTime?
+  sentTheme         String?
 }
 
 model Lead {

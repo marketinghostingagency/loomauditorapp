@@ -6,7 +6,33 @@ import { useRouter } from 'next/navigation';
 export default function ClientDashboardActions({ auditId }: { auditId: string }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [isSendingMHA, setIsSendingMHA] = useState(false);
+  const [isSendingSimplicity, setIsSendingSimplicity] = useState(false);
   const router = useRouter();
+
+  const handleSendEmail = async (theme: 'mha' | 'simplicity') => {
+    try {
+       if (theme === 'mha') setIsSendingMHA(true);
+       else setIsSendingSimplicity(true);
+
+       const res = await fetch(`/api/audit/${auditId}/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme })
+       });
+
+       const data = await res.json();
+       if (!res.ok) throw new Error(data.error || 'Failed to dispatch email.');
+       
+       alert('Email dispatched directly to the prospect successfully!');
+    } catch (err: any) {
+       console.error(err);
+       alert(err.message || 'Failed to send the final email. Did the Lead provide a valid email address?');
+    } finally {
+       setIsSendingMHA(false);
+       setIsSendingSimplicity(false);
+    }
+  };
 
   const handleShareMHA = () => {
     const url = `${window.location.origin}/report/${auditId}?theme=mha`;
@@ -42,6 +68,24 @@ export default function ClientDashboardActions({ auditId }: { auditId: string })
 
   return (
     <div className="flex items-center gap-3">
+      {/* Email Dispatch Action Buttons */}
+      <div className="flex bg-[#dc9f0f]/10 border border-[#dc9f0f]/30 rounded-lg overflow-hidden mr-2">
+        <button 
+          onClick={() => handleSendEmail('mha')}
+          disabled={isSendingMHA || isSendingSimplicity}
+          className="hover:bg-[#dc9f0f]/20 text-[#dc9f0f] font-bold text-sm tracking-tight py-2 px-4 transition-colors border-r border-[#dc9f0f]/30 flex items-center gap-2 disabled:opacity-50"
+        >
+          {isSendingMHA ? 'Dispatching...' : 'Email Report (MHA)'}
+        </button>
+        <button 
+          onClick={() => handleSendEmail('simplicity')}
+          disabled={isSendingMHA || isSendingSimplicity}
+          className="hover:bg-[#dc9f0f]/20 text-[#dc9f0f] font-bold text-sm tracking-tight py-2 px-4 transition-colors flex items-center gap-2 disabled:opacity-50"
+        >
+          {isSendingSimplicity ? 'Dispatching...' : 'Email Report (Simplicity)'}
+        </button>
+      </div>
+
       <div className="flex bg-[#222] border border-[#f5ed38]/30 rounded-lg overflow-hidden">
         <button 
           onClick={handleShareMHA}
