@@ -188,15 +188,27 @@ export async function POST(req: Request) {
             const sitemapUrls = new Set<string>();
             sitemapUrls.add(baseUrl + '/');
             
-            if (sitemapRes && sitemapRes.ok) {
-                const sitemapText = await sitemapRes.text();
-                // Extract all <loc> tags
-                const locRegex = /<loc>(.*?)<\/loc>/gi;
-                let match;
-                while ((match = locRegex.exec(sitemapText)) !== null) {
-                    sitemapUrls.add(match[1]);
-                }
+            async function extractUrlsFromSitemap(sitemapUrl: string, depth: number = 0) {
+               if (depth > 2 || sitemapUrls.size > 500) return;
+               try {
+                  const res = await fetch(sitemapUrl, fetchOptions);
+                  if (!res.ok) return;
+                  const text = await res.text();
+                  const locRegex = /<loc>(.*?)<\/loc>/gi;
+                  let match;
+                  while ((match = locRegex.exec(text)) !== null) {
+                      const locUrl = match[1].trim();
+                      if (locUrl.endsWith('.xml')) {
+                          await extractUrlsFromSitemap(locUrl, depth + 1);
+                      } else {
+                          sitemapUrls.add(locUrl);
+                      }
+                  }
+               } catch(e) {}
             }
+
+            await extractUrlsFromSitemap(`${baseUrl}/sitemap.xml`);
+            await extractUrlsFromSitemap(`${baseUrl}/sitemap_index.xml`);
             
             // Fallback to internal links if sitemap was empty or failed
             if (sitemapUrls.size <= 1) {
@@ -211,30 +223,35 @@ export async function POST(req: Request) {
                 });
             }
 
-            const urlsToCrawl = Array.from(sitemapUrls).slice(0, 50); // Upgraded from 20 to 50
+            const urlsToCrawl = Array.from(sitemapUrls).slice(0, 500); // Massive upgrade: now handling up to 500 fully processed URLs
             let csvContent = "URL,Meta Title,Meta Description\n";
-            // Crawl top 10 for metadata to save execution time in the background
-            const crawlResults = await Promise.all(urlsToCrawl.slice(0, 10).map(async (u) => {
-                try {
-                    const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(5000) }).catch(() => null);
-                    if (!r || !r.ok) return `"${u}","Access Blocked","Access Blocked"\n`;
-                    const html = await r.text();
-                    const $u = cheerio.load(html);
-                    let title = $u('title').text()?.replace(/"/g, '""')?.trim() || "Missing Title";
-                    let desc = $u('meta[name="description"]').attr('content')?.replace(/"/g, '""')?.trim() || "Missing Description";
-                    return `"${u}","${title}","${desc}"\n`;
-                } catch (e) {
-                    return `"${u}","Error","Error"\n`;
+            
+            // Batched crawling to avoid blowing up memory or getting massive rate limits
+            const crawlResults: string[] = new Array(urlsToCrawl.length).fill('');
+            const BATCH_SIZE = 15;
+            for (let i = 0; i < urlsToCrawl.length; i += BATCH_SIZE) {
+                const batch = urlsToCrawl.slice(i, i + BATCH_SIZE);
+                const batchRes = await Promise.all(batch.map(async (u) => {
+                    try {
+                        const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(6000) }).catch(() => null);
+                        if (!r || !r.ok) return `"${u}","Access Blocked","Access Blocked"\n`;
+                        const html = await r.text();
+                        const $u = cheerio.load(html);
+                        let title = $u('title').text()?.replace(/"/g, '""')?.trim() || "Missing Title";
+                        let desc = $u('meta[name="description"]').attr('content')?.replace(/"/g, '""')?.trim() || "Missing Description";
+                        return `"${u}","${title}","${desc}"\n`;
+                    } catch (e) {
+                        return `"${u}","Timeout/Error","Timeout/Error"\n`;
+                    }
+                }));
+                for (let j = 0; j < batchRes.length; j++) {
+                    crawlResults[i + j] = batchRes[j];
                 }
-            }));
+            }
             
-            // For the sitemap.csv download, we just map all found urls
-            urlsToCrawl.forEach((u, i) => {
-               if (i >= 10) csvContent += `"${u}","Not Fetched","Not Fetched"\n`; 
-               else csvContent += crawlResults[i];
-            });
-            
-            let seoSnippet = "Top Site Infrastructure Meta Mappings:\n" + crawlResults.slice(0, 5).join('');
+            // Dump the full processed metadata block to the CSV payload
+            crawlResults.forEach(r => { csvContent += r; });
+            let seoSnippet = "Top Site Infrastructure Meta Mappings:\n" + crawlResults.slice(0, 10).join('');
 
             // 4. Technical checks
             const checkPixel = (htmlSource: string) => {

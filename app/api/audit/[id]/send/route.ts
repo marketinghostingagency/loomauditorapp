@@ -57,13 +57,10 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
           to: lead.email,
           subject: `Your In-Depth Growth Audit for ${audit.brandName} is Ready`,
           html: `
-              <p>Hi ${lead.name || 'there'},</p>
-              <p>My team and I have completed our master-level teardown of your digital footprint for <strong>${audit.brandName}</strong>.</p>
+              <p>Joel has completed his master-level teardown of your digital footprint for <strong>${audit.brandName}</strong>.</p>
               <p>You can securely access your executive hypothesis report and strategic playbook below:</p>
               <p><a href="${reportUrl}">${reportUrl}</a></p>
               <p>Please review these findings, and let me know when you'd like to schedule a call to discuss the path forward.</p>
-              <br>
-              <p>Best,<br>Joel Otten<br>Marketing Hosting Agency</p>
           `
        };
     } else {
@@ -72,13 +69,10 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
           to: lead.email,
           subject: `Your In-Depth Growth Audit for ${audit.brandName} is Ready`,
           html: `
-              <p>Hi ${lead.name || 'there'},</p>
-              <p>My team and I have completed our master-level teardown of your digital footprint for <strong>${audit.brandName}</strong>.</p>
+              <p>Joel has completed his master-level teardown of your digital footprint for <strong>${audit.brandName}</strong>.</p>
               <p>You can securely access your executive hypothesis report and strategic playbook below:</p>
               <p><a href="${reportUrl}">${reportUrl}</a></p>
               <p>Please review these findings, and let me know when you'd like to schedule a call to discuss the path forward.</p>
-              <br>
-              <p>Best,<br>Joel Otten<br>Simplicity Media</p>
           `
        };
     }
