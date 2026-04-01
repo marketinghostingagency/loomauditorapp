@@ -24,7 +24,7 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
         textMain: "text-[#07004C]",
         borderCard: "border-slate-200",
         bgCard: "bg-slate-50",
-        logoUrl: "https://images.squarespace-cdn.com/content/v1/660481b4bda43f0cfc4bcee8/050ba1e0-c8f8-4e8c-859a-18e4785461c3/Simplicity+Media+Official+Logo-03.png"
+        logoUrl: "/simplicity-logo.png"
       }
     : { 
         name: 'mha',
@@ -36,7 +36,7 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
         textMain: "text-slate-200",
         borderCard: "border-[#464646]",
         bgCard: "glass-card",
-        logoUrl: null
+        logoUrl: "/mha-logo2.png"
       };
 
   const audit = await prisma.audit.findUnique({
@@ -56,42 +56,30 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
 
   return (
     <div className={`min-h-screen ${brandObj.bgMain} ${brandObj.textMain} font-sans selection:bg-[#f5ed38] selection:text-black print:bg-white print:text-black transition-colors relative`}>
-      {/* NATIVE PDF MULTI-PAGE PRINT HEADER HACK */}
+      {/* NATIVE PDF MULTI-PAGE PRINT HACK utilizing HTML Tables instead of fixed positioning */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           @page {
-            margin-top: 25mm !important;
-            margin-bottom: 20mm !important;
-          }
-          .print-fixed-header {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            background: white !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            border-bottom: 2px solid ${isSimplicity ? '#116dff' : '#000'} !important;
-            padding-bottom: 15px !important;
-            padding-top: 10px !important;
-            z-index: 9999 !important;
-          }
-          body {
-            padding-top: 25mm !important;
+            margin: 10mm !important;
           }
         }
       `}} />
-      <div className="hidden print-fixed-header">
-         <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Growth Playbook / {audit.brandName}</div>
-         {brandObj.logoUrl ? (
-             <img src={brandObj.logoUrl} className="h-6 object-contain" alt={brandObj.title} />
-         ) : (
-             <div className="text-[14px] font-black tracking-tighter text-black uppercase">
-                Marketing Hosting<span className="text-[#dc9f0f]">Agency</span>
-             </div>
-         )}
-      </div>
+
+      <div className="block print:table w-full max-w-full">
+         
+         {/* REPEATING PDF HEADER THAT PAGINATES NATURALLY */}
+         <div className="hidden print:table-header-group">
+            <div className={`flex items-center justify-between border-b-2 pb-4 mb-8 pt-4 w-full ${isSimplicity ? 'border-[#116dff]' : 'border-black'}`}>
+               <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Growth Playbook / {audit.brandName}</div>
+               {isSimplicity ? (
+                   <img src="/simplicity-logo.png" className="h-5 object-contain" alt={brandObj.title} />
+               ) : (
+                   <img src="/mha-logo2.png" className="h-5 object-contain" alt={brandObj.title} />
+               )}
+            </div>
+         </div>
+
+         <div className="block print:table-row-group w-full max-w-full">
 
       {isSimplicity ? (
         <nav className="sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-slate-200 bg-white/95 backdrop-blur-md shadow-sm print:hidden">
@@ -224,6 +212,8 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
           </div>
         )}
       </main>
+      </div>{/* END TABLE ROW GROUP */}
+      </div>{/* END TABLE */}
     </div>
   );
 }
