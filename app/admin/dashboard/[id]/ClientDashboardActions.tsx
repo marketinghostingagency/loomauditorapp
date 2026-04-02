@@ -8,7 +8,26 @@ export default function ClientDashboardActions({ auditId }: { auditId: string })
   const [isCopied, setIsCopied] = useState(false);
   const [isSendingMHA, setIsSendingMHA] = useState(false);
   const [isSendingSimplicity, setIsSendingSimplicity] = useState(false);
+  const [isMarking, setIsMarking] = useState(false);
   const router = useRouter();
+
+  const handleMarkManual = async (theme: 'mha' | 'simplicity') => {
+    try {
+       setIsMarking(true);
+       const res = await fetch(`/api/audit/${auditId}/mark-sent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ theme })
+       });
+       if (!res.ok) throw new Error('Failed to mark manually');
+       router.refresh();
+    } catch(err) {
+       console.error(err);
+       alert('Failed to update delivery status manually.');
+    } finally {
+       setIsMarking(false);
+    }
+  };
 
   const handleSendEmail = async (theme: 'mha' | 'simplicity') => {
     try {
@@ -83,6 +102,24 @@ export default function ClientDashboardActions({ auditId }: { auditId: string })
           className="hover:bg-[#dc9f0f]/20 text-[#dc9f0f] font-bold text-sm tracking-tight py-2 px-4 transition-colors flex items-center gap-2 disabled:opacity-50"
         >
           {isSendingSimplicity ? 'Dispatching...' : 'Email Report (Simplicity)'}
+        </button>
+      </div>
+
+      {/* Mark Manually Action Buttons */}
+      <div className="flex bg-green-500/10 border border-green-500/30 rounded-lg overflow-hidden mr-2">
+        <button 
+          onClick={() => handleMarkManual('mha')}
+          disabled={isMarking}
+          className="hover:bg-green-500/20 text-green-400 font-bold text-xs tracking-tight py-2 px-3 transition-colors border-r border-green-500/30 flex items-center gap-1 disabled:opacity-50"
+        >
+          ✔ Mark MHA
+        </button>
+        <button 
+          onClick={() => handleMarkManual('simplicity')}
+          disabled={isMarking}
+          className="hover:bg-green-500/20 text-green-400 font-bold text-xs tracking-tight py-2 px-3 transition-colors flex items-center gap-1 disabled:opacity-50"
+        >
+          ✔ Mark Simplicity
         </button>
       </div>
 
