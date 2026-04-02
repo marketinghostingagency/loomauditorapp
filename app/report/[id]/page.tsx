@@ -212,7 +212,7 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
             </div>
           </div>
         ) : (
-          <AuditPendingBanner dark={!isSimplicity} />
+          <AuditPendingBanner dark={!isSimplicity} clientFacing={true} />
         )}
       </main>
       </div>{/* END TABLE ROW GROUP */}
