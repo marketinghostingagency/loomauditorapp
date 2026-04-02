@@ -1,31 +1,35 @@
 import { NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { s3Client, S3_BUCKET_NAME } from '../../../lib/s3';
 
 export async function POST(req: Request) {
   try {
-    const data = await req.formData();
-    const file: File | null = data.get('file') as unknown as File;
+    const { filename, contentType } = await req.json();
 
-    if (!file) {
-      return NextResponse.json({ success: false, error: 'No file found' }, { status: 400 });
+    if (!filename || !contentType) {
+      return NextResponse.json({ error: 'Filename and contentType are required' }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const uniqueName = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9.]/g, '_')}`;
 
-    // Create unique filename
-    const uniqueName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-    const filepath = path.join(process.cwd(), 'public', 'uploads', uniqueName);
+    const command = new PutObjectCommand({
+      Bucket: S3_BUCKET_NAME,
+      Key: uniqueName,
+      ContentType: contentType,
+      // ACL: 'public-read' // Uncomment if bucket is configured for public read access
+    });
 
-    await writeFile(filepath, buffer);
+    // Generate a secure upload ticket valid for 5 minutes (300 seconds)
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
 
     return NextResponse.json({ 
-      success: true, 
-      url: `/uploads/${uniqueName}` 
+      presignedUrl,
+      // If bucket is public, this will be the final reachable URL:
+      url: `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${uniqueName}`
     });
   } catch (error: any) {
-    console.error('Upload error:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('Presigner error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to generate upload URL' }, { status: 500 });
   }
 }

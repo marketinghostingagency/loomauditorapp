@@ -65,5 +65,6 @@ model CreativeAsset {
   dimensions    String?  // e.g. '1080x1920'
   fileUrl       String
   tags          String?  // JSON stringified array
+  status        String   @default("ACTIVE") // 'ACTIVE' or 'ARCHIVED'
   createdAt     DateTime @default(now())
 }

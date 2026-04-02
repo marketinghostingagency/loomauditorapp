@@ -4,8 +4,10 @@ import { useState } from 'react';
 
 export default function BrandBookManager({ initialBrands }: { initialBrands: any[] }) {
   const [brands, setBrands] = useState(initialBrands);
-  const [selectedBrand, setSelectedBrand] = useState<any>(brands[0] || null);
+  const [selectedBrand, setSelectedBrand] = useState<any>(null);
   const [newBrandName, setNewBrandName] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isArchiving, setIsArchiving] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateBrand = async (e: React.FormEvent) => {
@@ -27,6 +29,59 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
         alert('Could not initialize Brand Book.');
      } finally {
         setIsCreating(false);
+     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const file = e.target.files?.[0];
+     if (!file || !selectedBrand) return;
+
+     try {
+        setIsUploading(true);
+        // 1. Get presigned URL from our backend
+        const ticketRes = await fetch('/api/upload', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ filename: file.name, contentType: file.type })
+        });
+        if (!ticketRes.ok) throw new Error('Failed to get secure upload ticket');
+        const { presignedUrl, url } = await ticketRes.json();
+
+        // 2. Upload cleanly to AWS S3 directly from browser
+        const uploadRes = await fetch(presignedUrl, {
+           method: 'PUT',
+           body: file,
+           headers: { 'Content-Type': file.type }
+        });
+        if (!uploadRes.ok) throw new Error('AWS S3 pipeline rejected the file');
+
+        // 3. Register it locally in DB
+        // (Assuming you'd create an API like /api/brands/[id]/assets passing the public URL)
+        alert(`Successfully uploaded directly to S3: ${url}`);
+        
+     } catch(err: any) {
+        console.error(err);
+        alert('Upload Error: ' + err.message);
+     } finally {
+        setIsUploading(false);
+     }
+  };
+
+  const handleArchiveBrand = async () => {
+     if (!selectedBrand) return;
+     if (!confirm('Transition all of this brand\'s assets to AWS Glacier Deep Archive? This drastically reduces costs, but retrieval takes 12 hours.')) return;
+     
+     try {
+        setIsArchiving(true);
+        const res = await fetch(`/api/brands/${selectedBrand.id}/archive`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert(data.message);
+     } catch(err: any) {
+        console.error(err);
+        alert(err.message);
+     } finally {
+        setIsArchiving(false);
      }
   };
 
@@ -79,9 +134,19 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
             <div className="bg-[#1a1a1a] border border-[#f5ed38]/30 rounded-2xl p-8 flex flex-col gap-6">
                <div className="border-b border-[#333] pb-4 flex justify-between items-center">
                  <h2 className="text-3xl font-black text-white">{selectedBrand.brandName} <span className="text-[#f5ed38]">Identity</span></h2>
-                 <button className="bg-[#f5ed38]/10 text-[#f5ed38] px-4 py-2 rounded-lg font-bold border border-[#f5ed38]/30 hover:bg-[#f5ed38]/20 transition-colors">
-                   + New Asset
-                 </button>
+                 <div className="flex gap-3">
+                   <button 
+                     onClick={handleArchiveBrand}
+                     disabled={isArchiving}
+                     className="bg-[#222] hover:bg-[#333] text-purple-400 px-4 py-2 rounded-lg font-bold border border-[#464646] transition-colors disabled:opacity-50"
+                   >
+                     {isArchiving ? 'Archiving...' : '🗄️ Send to Glacier'}
+                   </button>
+                   <label className="bg-[#f5ed38]/10 text-[#f5ed38] px-4 py-2 rounded-lg font-bold border border-[#f5ed38]/30 hover:bg-[#f5ed38]/20 transition-colors cursor-pointer disabled:opacity-50">
+                     {isUploading ? 'Uploading to S3...' : '+ New Asset'}
+                     <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                   </label>
+                 </div>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
