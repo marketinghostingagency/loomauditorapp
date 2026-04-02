@@ -18,8 +18,18 @@ export default async function AdminDashboard() {
   }));
 
   return (
-    <div className="min-h-screen p-8 text-white">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#111111] text-white font-sans">
+      <nav className="glass-card sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-[#222222]">
+        <div className="text-white font-bold text-xl tracking-tight flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#f5ed38] animate-pulse"></span>
+          MHA Core <span className="text-[#464646]">/</span> <span className="text-slate-400 font-medium text-lg">Growth Auditor</span>
+        </div>
+        <Link href="/admin/studio" className="hover:bg-[#f5ed38] hover:text-black text-[#f5ed38] border border-[#f5ed38]/50 px-4 py-2 rounded-xl text-sm font-bold tracking-tight transition-colors">
+          Launch Creative Studio &rarr;
+        </Link>
+      </nav>
+
+      <main className="max-w-6xl mx-auto px-6 py-12">
         <div className="flex justify-between items-center border-b border-[#464646] pb-4">
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#f5ed38] to-[#dc9f0f]">
             Historical Audits
@@ -98,7 +108,7 @@ export default async function AdminDashboard() {
             </tbody>
           </table>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

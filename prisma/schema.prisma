@@ -41,3 +41,29 @@ model StyleRule {
   createdAt DateTime @default(now())
 }
 
+model BrandBook {
+  id            String   @id @default(cuid())
+  brandName     String   @unique
+  primaryColor  String?
+  secondaryColor String?
+  accentColor   String?
+  typography    String?
+  logoUrl       String?
+  toneOfVoice   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  assets        CreativeAsset[]
+}
+
+model CreativeAsset {
+  id            String   @id @default(cuid())
+  brandId       String
+  brand         BrandBook @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  title         String
+  type          String   // e.g. 'image', 'video', 'template'
+  platform      String?  // e.g. 'instagram', 'tiktok', 'facebook'
+  dimensions    String?  // e.g. '1080x1920'
+  fileUrl       String
+  tags          String?  // JSON stringified array
+  createdAt     DateTime @default(now())
+}
