@@ -254,7 +254,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            const urlsToCrawl = Array.from(sitemapUrls);
+            const urlsToCrawl = Array.from(sitemapUrls).slice(0, 500);
             console.log(`[Sitemap] Crawling ${urlsToCrawl.length} URLs for meta data...`);
             let csvContent = "URL,Meta Title,Meta Description\n";
             
