@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { DeleteObjectCommand } from '@aws-sdk/client-s3';
-import { s3Client, S3_BUCKET_NAME } from '../../../../lib/s3';
+import { storageClient, GCS_BUCKET_NAME } from '../../../../lib/gcs';
 import { prisma } from '../../../../lib/prisma';
 
 export async function DELETE(req: Request, props: { params: Promise<{ id: string }> }) {
@@ -14,18 +13,14 @@ export async function DELETE(req: Request, props: { params: Promise<{ id: string
        return NextResponse.json({ error: 'Asset not found in database' }, { status: 404 });
     }
 
-    // Parse filename from fileUrl
-    // Assuming url is like: https://mha-creative-studio.s3.us-east-1.amazonaws.com/169000-video.mp4
     const urlParts = asset.fileUrl.split('/');
     const key = urlParts[urlParts.length - 1];
 
     if (key) {
-       // Issue delete command to AWS
-       const command = new DeleteObjectCommand({
-          Bucket: S3_BUCKET_NAME,
-          Key: key
-       });
-       await s3Client.send(command).catch(err => console.error('AWS Delete Error:', err));
+       // Issue delete command to Google Cloud Storage
+       const bucket = storageClient.bucket(GCS_BUCKET_NAME);
+       const file = bucket.file(key);
+       await file.delete().catch(err => console.error('GCS Delete Error:', err));
     }
 
     // Delete from Database

@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { s3Client, S3_BUCKET_NAME } from '../../../lib/s3';
+import { storageClient, GCS_BUCKET_NAME } from '../../../lib/gcs';
 
 export async function POST(req: Request) {
   try {
@@ -13,23 +11,24 @@ export async function POST(req: Request) {
 
     const uniqueName = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9.]/g, '_')}`;
 
-    const command = new PutObjectCommand({
-      Bucket: S3_BUCKET_NAME,
-      Key: uniqueName,
-      ContentType: contentType,
-      // ACL: 'public-read' // Uncomment if bucket is configured for public read access
-    });
+    const bucket = storageClient.bucket(GCS_BUCKET_NAME);
+    const file = bucket.file(uniqueName);
 
-    // Generate a secure upload ticket valid for 5 minutes (300 seconds)
-    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
+    // Generate a secure upload ticket valid for 15 minutes
+    const [presignedUrl] = await file.getSignedUrl({
+      version: 'v4',
+      action: 'write',
+      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+      contentType,
+    });
 
     return NextResponse.json({ 
       presignedUrl,
-      // If bucket is public, this will be the final reachable URL:
-      url: `https://${S3_BUCKET_NAME}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${uniqueName}`
+      // Final reachable URL (assuming uniform bucket-level access is public read)
+      url: `https://storage.googleapis.com/${GCS_BUCKET_NAME}/${uniqueName}`
     });
   } catch (error: any) {
-    console.error('Presigner error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to generate upload URL' }, { status: 500 });
+    console.error('Google Cloud Presigner error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to generate GCS upload URL' }, { status: 500 });
   }
 }

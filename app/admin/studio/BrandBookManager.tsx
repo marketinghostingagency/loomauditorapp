@@ -47,17 +47,16 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
         if (!ticketRes.ok) throw new Error('Failed to get secure upload ticket');
         const { presignedUrl, url } = await ticketRes.json();
 
-        // 2. Upload cleanly to AWS S3 directly from browser
+        // 2. Upload cleanly to Google Cloud Storage directly from browser
         const uploadRes = await fetch(presignedUrl, {
            method: 'PUT',
            body: file,
            headers: { 'Content-Type': file.type }
         });
-        if (!uploadRes.ok) throw new Error('AWS S3 pipeline rejected the file');
+        if (!uploadRes.ok) throw new Error('Google Cloud Storage rejected the file');
 
         // 3. Register it locally in DB
-        // (Assuming you'd create an API like /api/brands/[id]/assets passing the public URL)
-        alert(`Successfully uploaded directly to S3: ${url}`);
+        alert(`Successfully uploaded directly to GCS: ${url}`);
         
      } catch(err: any) {
         console.error(err);
@@ -69,7 +68,7 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
 
   const handleArchiveBrand = async () => {
      if (!selectedBrand) return;
-     if (!confirm('Transition all of this brand\'s assets to AWS Glacier Deep Archive? This drastically reduces costs, but retrieval takes 12 hours.')) return;
+     if (!confirm('Transition all of this brand\'s assets to Google Cloud Archive Storage? This drastically reduces costs, but retrieval takes 12 hours.')) return;
      
      try {
         setIsArchiving(true);
@@ -143,7 +142,7 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
                      {isArchiving ? 'Archiving...' : '🗄️ Send to Glacier'}
                    </button>
                    <label className="bg-[#f5ed38]/10 text-[#f5ed38] px-4 py-2 rounded-lg font-bold border border-[#f5ed38]/30 hover:bg-[#f5ed38]/20 transition-colors cursor-pointer disabled:opacity-50">
-                     {isUploading ? 'Uploading to S3...' : '+ New Asset'}
+                     {isUploading ? 'Uploading to GCS...' : '+ New Asset'}
                      <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
                    </label>
                  </div>
