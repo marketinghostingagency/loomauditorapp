@@ -86,9 +86,6 @@ export default function AuditPendingBanner({
             </div>
           </div>
 
-          <p className={`text-xs mt-2 ${ dark ? 'text-slate-600' : 'text-slate-400' }`}>
-            Questions? Reach out to your account manager.
-          </p>
         </div>
       </div>
     );

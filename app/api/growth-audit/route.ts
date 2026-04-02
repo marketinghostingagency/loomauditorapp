@@ -187,31 +187,62 @@ export async function POST(req: Request) {
             // 3. True Sitemap & CSV Meta Data Generator
             const sitemapUrls = new Set<string>();
             sitemapUrls.add(baseUrl + '/');
-            
+
+            // Fetch a sitemap URL with retry — up to 3 attempts, 10s each
+            async function fetchWithRetry(url: string, attempts = 3): Promise<Response | null> {
+              for (let i = 0; i < attempts; i++) {
+                try {
+                  const res = await fetch(url, {
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                    signal: AbortSignal.timeout(12000)  // 12s per attempt
+                  });
+                  if (res.ok) return res;
+                } catch {
+                  if (i < attempts - 1) await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+                }
+              }
+              return null;
+            }
+
             async function extractUrlsFromSitemap(sitemapUrl: string, depth: number = 0) {
-               if (depth > 2 || sitemapUrls.size > 500) return;
+               if (depth > 3 || sitemapUrls.size > 5000) return;
                try {
-                  const res = await fetch(sitemapUrl, fetchOptions);
-                  if (!res.ok) return;
+                  const res = await fetchWithRetry(sitemapUrl);
+                  if (!res) return;
                   const text = await res.text();
                   const locRegex = /<loc>(.*?)<\/loc>/gi;
                   let match;
+                  const childSitemaps: string[] = [];
                   while ((match = locRegex.exec(text)) !== null) {
                       const locUrl = match[1].trim();
                       if (locUrl.endsWith('.xml')) {
-                          await extractUrlsFromSitemap(locUrl, depth + 1);
+                          childSitemaps.push(locUrl);
                       } else {
                           sitemapUrls.add(locUrl);
                       }
                   }
+                  // Process child sitemaps sequentially to avoid hammering the server
+                  for (const child of childSitemaps) {
+                    await extractUrlsFromSitemap(child, depth + 1);
+                    await new Promise(r => setTimeout(r, 300)); // polite delay between sitemap files
+                  }
                } catch(e) {}
             }
 
+            console.log(`[Sitemap] Starting extraction for ${baseUrl}`);
             await extractUrlsFromSitemap(`${baseUrl}/sitemap.xml`);
             await extractUrlsFromSitemap(`${baseUrl}/sitemap_index.xml`);
+            // Also try common alternate sitemap locations
+            if (sitemapUrls.size <= 1) {
+              await extractUrlsFromSitemap(`${baseUrl}/sitemap1.xml`);
+              await extractUrlsFromSitemap(`${baseUrl}/news-sitemap.xml`);
+              await extractUrlsFromSitemap(`${baseUrl}/product-sitemap.xml`);
+            }
+            console.log(`[Sitemap] Found ${sitemapUrls.size} URLs from sitemaps`);
             
             // Fallback to internal links if sitemap was empty or failed
             if (sitemapUrls.size <= 1) {
+                console.log(`[Sitemap] No sitemap found, falling back to internal link crawl`);
                 $home('a').each((_, el) => {
                     const href = $home(el).attr('href');
                     if (!href) return;
@@ -223,31 +254,52 @@ export async function POST(req: Request) {
                 });
             }
 
-            const urlsToCrawl = Array.from(sitemapUrls).slice(0, 500); // Massive upgrade: now handling up to 500 fully processed URLs
+            const urlsToCrawl = Array.from(sitemapUrls);
+            console.log(`[Sitemap] Crawling ${urlsToCrawl.length} URLs for meta data...`);
             let csvContent = "URL,Meta Title,Meta Description\n";
             
-            // Batched crawling to avoid blowing up memory or getting massive rate limits
+            // Sequential batches of 8 with a polite delay between batches
+            // This avoids rate limiting and gives slow servers time to respond
             const crawlResults: string[] = new Array(urlsToCrawl.length).fill('');
-            const BATCH_SIZE = 15;
+            const BATCH_SIZE = 8;
+            const BATCH_DELAY_MS = 800; // wait between batches to avoid rate limits
+
             for (let i = 0; i < urlsToCrawl.length; i += BATCH_SIZE) {
                 const batch = urlsToCrawl.slice(i, i + BATCH_SIZE);
                 const batchRes = await Promise.all(batch.map(async (u) => {
-                    try {
-                        const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(6000) }).catch(() => null);
-                        if (!r || !r.ok) return `"${u}","Access Blocked","Access Blocked"\n`;
-                        const html = await r.text();
-                        const $u = cheerio.load(html);
-                        let title = $u('title').text()?.replace(/"/g, '""')?.trim() || "Missing Title";
-                        let desc = $u('meta[name="description"]').attr('content')?.replace(/"/g, '""')?.trim() || "Missing Description";
-                        return `"${u}","${title}","${desc}"\n`;
-                    } catch (e) {
-                        return `"${u}","Timeout/Error","Timeout/Error"\n`;
+                    // Each page gets up to 2 attempts with a 15s timeout
+                    for (let attempt = 0; attempt < 2; attempt++) {
+                      try {
+                          const r = await fetch(u, {
+                            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+                            signal: AbortSignal.timeout(15000) // 15s — enough for slow servers
+                          }).catch(() => null);
+                          if (!r || !r.ok) {
+                            if (attempt === 0) { await new Promise(res => setTimeout(res, 1000)); continue; }
+                            return `"${u}","Could Not Access","Could Not Access"\n`;
+                          }
+                          const html = await r.text();
+                          const $u = cheerio.load(html);
+                          const title = $u('title').text()?.replace(/"/g, '""')?.trim() || 'Missing Title';
+                          const desc = $u('meta[name="description"]').attr('content')?.replace(/"/g, '""')?.trim() || 'Missing Description';
+                          return `"${u}","${title}","${desc}"\n`;
+                      } catch {
+                          if (attempt === 0) { await new Promise(res => setTimeout(res, 1000)); continue; }
+                          return `"${u}","Timeout","Timeout"\n`;
+                      }
                     }
+                    return `"${u}","Error","Error"\n`;
                 }));
                 for (let j = 0; j < batchRes.length; j++) {
                     crawlResults[i + j] = batchRes[j];
                 }
+                if (i + BATCH_SIZE < urlsToCrawl.length) {
+                    await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
+                }
+                console.log(`[Sitemap] Crawled ${Math.min(i + BATCH_SIZE, urlsToCrawl.length)} / ${urlsToCrawl.length}`);
             }
+
+            console.log(`[Sitemap] Crawl complete. Generating CSV...`);
             
             // Dump the full processed metadata block to the CSV payload
             crawlResults.forEach(r => { csvContent += r; });
