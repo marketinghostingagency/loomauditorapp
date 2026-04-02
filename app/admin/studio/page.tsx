@@ -34,7 +34,7 @@ export default async function CreativeStudio() {
             </p>
          </div>
 
-         <BrandBookManager initialBrands={brands} />
+         <BrandBookManager initialBrands={brands as unknown as any[]} />
       </main>
     </div>
   );

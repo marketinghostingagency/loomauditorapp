@@ -1,34 +1,43 @@
 import { NextResponse } from 'next/server';
 import { storageClient, GCS_BUCKET_NAME } from '../../../lib/gcs';
 
+/**
+ * Server-side direct upload to GCS.
+ * The client sends the raw file as multipart/form-data.
+ * We stream directly to GCS — no broken presigned URL signature issues.
+ */
 export async function POST(req: Request) {
   try {
-    const { filename, contentType } = await req.json();
+    const formData = await req.formData();
+    const file = formData.get('file') as File | null;
 
-    if (!filename || !contentType) {
-      return NextResponse.json({ error: 'Filename and contentType are required' }, { status: 400 });
+    if (!file) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const uniqueName = `${Date.now()}-${filename.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-
+    const uniqueName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const bucket = storageClient.bucket(GCS_BUCKET_NAME);
-    const file = bucket.file(uniqueName);
+    const gcsFile = bucket.file(uniqueName);
 
-    // Generate a secure upload ticket valid for 15 minutes
-    const [presignedUrl] = await file.getSignedUrl({
-      version: 'v4',
-      action: 'write',
-      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-      contentType,
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    await gcsFile.save(buffer, {
+      contentType: file.type,
+      resumable: false,
+      public: true, // Make publicly readable
     });
 
+    const publicUrl = `https://storage.googleapis.com/${GCS_BUCKET_NAME}/${uniqueName}`;
+    
     return NextResponse.json({ 
-      presignedUrl,
-      // Final reachable URL (assuming uniform bucket-level access is public read)
-      url: `https://storage.googleapis.com/${GCS_BUCKET_NAME}/${uniqueName}`
+      success: true,
+      url: publicUrl,
+      filename: uniqueName,
+      size: buffer.length
     });
   } catch (error: any) {
-    console.error('Google Cloud Presigner error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to generate GCS upload URL' }, { status: 500 });
+    console.error('GCS Upload Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to upload file to GCS' }, { status: 500 });
   }
 }

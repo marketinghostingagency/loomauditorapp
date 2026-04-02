@@ -16,8 +16,8 @@ export async function POST(req: Request) {
   try {
     const { fileUrl, prompt, aspectPreset } = await req.json();
 
-    if (!fileUrl || !prompt) {
-      return NextResponse.json({ error: 'fileUrl and prompt are required' }, { status: 400 });
+    if (!prompt) {
+      return NextResponse.json({ error: 'prompt is required' }, { status: 400 });
     }
 
     // Map the requested preset to instructions for the AI
@@ -35,11 +35,11 @@ export async function POST(req: Request) {
           formatInstructions = "Output must be exactly 1440x2560 pixels (9:16 ratio) for Stories.";
           break;
        default:
-          formatInstructions = "Match original video aspect ratio.";
+          formatInstructions = fileUrl ? "Match original video aspect ratio." : "Output in 1:1 ratio.";
     }
 
     const fullPrompt = `
-      You are the MHA Creative Studio engine (powered by VEO). Analyze the attached video and duplicate it with the following core changes:
+      You are the MHA Creative Studio engine (powered by VEO). Generate or duplicate the asset with the following core instructions:
       [USER REQUEST]: ${prompt}
 
       [META ADS SPECIFICATIONS - MANDATORY]:
@@ -48,18 +48,20 @@ export async function POST(req: Request) {
       File size objective: under 4GB.
     `;
 
-    // Convert public URL to internal gs:// format required by Vertex AI natively if it's hosted on GCS
-    // Assuming standard URL format https://storage.googleapis.com/bucket/key
-    let gcsUri = fileUrl;
-    if (fileUrl.includes('storage.googleapis.com')) {
-        const urlParts = fileUrl.split('storage.googleapis.com/');
-        gcsUri = `gs://${urlParts[1]}`;
+    let parts: any[] = [{ text: fullPrompt }];
+
+    // If a file is attached, convert public URL to internal gs:// format required by Vertex AI natively
+    if (fileUrl) {
+      let gcsUri = fileUrl;
+      if (fileUrl.includes('storage.googleapis.com')) {
+          const urlParts = fileUrl.split('storage.googleapis.com/');
+          gcsUri = `gs://${urlParts[1]}`;
+      }
+      parts.unshift({ fileData: { fileUri: gcsUri, mimeType: 'video/mp4' } });
     }
 
     const request = {
-      contents: [
-        { role: 'user', parts: [{ fileData: { fileUri: gcsUri, mimeType: 'video/mp4' } }, { text: fullPrompt }] }
-      ],
+      contents: [{ role: 'user', parts }],
     };
 
     // Mocking response logic here if Veo / Gemini Pro is doing async rendering vs direct streaming.

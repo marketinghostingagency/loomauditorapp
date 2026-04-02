@@ -8,17 +8,17 @@ generator client {
 }
 
 model Audit {
-  id                String   @id @default(cuid())
-  createdAt         DateTime @default(now())
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
   url               String
   brandName         String
   apexDomain        String?
-  metaPixelFound    Boolean  @default(false)
+  metaPixelFound    Boolean   @default(false)
   script            String?
   sitemapXml        String?
-  affiliatePrograms String?  // JSON stringified array representing found programs
+  affiliatePrograms String? // JSON stringified array representing found programs
   landingPageUrl    String?
-  socialLinks       String?  // JSON stringified array of social profiles
+  socialLinks       String? // JSON stringified array of social profiles
   aiAnalysis        String?
   sentAt            DateTime?
   sentTheme         String?
@@ -42,29 +42,54 @@ model StyleRule {
 }
 
 model BrandBook {
-  id            String   @id @default(cuid())
-  brandName     String   @unique
-  primaryColor  String?
-  secondaryColor String?
-  accentColor   String?
-  typography    String?
-  logoUrl       String?
-  toneOfVoice   String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  assets        CreativeAsset[]
+  id               String          @id @default(cuid())
+  brandName        String          @unique
+  website          String?
+
+  // ── 4 Brand Color Tokens ──────────────────────────────────────────────
+  // These are brand defaults. Per-asset, any can be overridden.
+  brandBackground  String?   // Default asset/page background (e.g. #ffffff)
+  brandHeaderColor String?   // Heading / H1 font color (e.g. #1a1a1a)
+  brandTextColor   String?   // Body paragraph text color (e.g. #555555)
+  brandCtaColor    String?   // CTA button/highlight color (e.g. #f13729)
+
+  // ── Legacy extended palette (kept for backwards compat) ───────────────
+  primaryColor     String?
+  secondaryColor   String?
+  accentColor      String?
+  backgroundColor  String?
+  fontColor        String?
+  ctaPrimaryColor  String?
+  ctaSecondaryColor String?
+
+  // ── Typography ────────────────────────────────────────────────────────
+  typography       String?   // Primary font family (e.g. "Barlow")
+  fontH1           String?   // H1 style JSON: { family, size, weight, label }
+  fontH2           String?
+  fontBody         String?
+
+  // ── Identity ──────────────────────────────────────────────────────────
+  logoUrl          String?
+  toneOfVoice      String?
+  status           String          @default("ACTIVE") // ACTIVE or ARCHIVED
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  assets           CreativeAsset[]
 }
 
+
 model CreativeAsset {
-  id            String   @id @default(cuid())
-  brandId       String
-  brand         BrandBook @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  title         String
-  type          String   // e.g. 'image', 'video', 'template'
-  platform      String?  // e.g. 'instagram', 'tiktok', 'facebook'
-  dimensions    String?  // e.g. '1080x1920'
-  fileUrl       String
-  tags          String?  // JSON stringified array
-  status        String   @default("ACTIVE") // 'ACTIVE' or 'ARCHIVED'
-  createdAt     DateTime @default(now())
+  id         String    @id @default(cuid())
+  brandId    String
+  brand      BrandBook @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  title      String
+  type       String // e.g. 'image', 'video', 'template'
+  platform   String? // e.g. 'instagram', 'tiktok', 'facebook'
+  dimensions String? // e.g. '1080x1920'
+  fileUrl    String
+  classification String?
+  isPrimary  Boolean   @default(false)
+  tags       String? // JSON stringified array
+  status     String    @default("ACTIVE") // 'ACTIVE' or 'ARCHIVED'
+  createdAt  DateTime  @default(now())
 }

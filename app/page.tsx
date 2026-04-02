@@ -119,6 +119,7 @@ export default function Home() {
                   placeholder="Brand Name (e.g. Omi Wellbeauty)"
                   className="w-full md:w-1/3 bg-black/20 border border-[#464646] rounded-xl outline-none px-6 py-4 text-lg text-white placeholder-slate-500 focus:border-[#f5ed38] transition-colors"
                   required
+                  suppressHydrationWarning
                 />
                 <input
                   type="url"
@@ -127,6 +128,7 @@ export default function Home() {
                   placeholder="Homepage URL (e.g. mudplugz.com)"
                   className="w-full md:w-1/3 bg-black/20 border border-[#464646] rounded-xl outline-none px-6 py-4 text-lg text-white placeholder-slate-500 focus:border-[#f5ed38] transition-colors"
                   required
+                  suppressHydrationWarning
                 />
                 <input
                   type="url"
@@ -134,6 +136,7 @@ export default function Home() {
                   onChange={(e) => setLandingPageUrl(e.target.value)}
                   placeholder="Landing Page URL (Optional)"
                   className="w-full md:w-1/3 bg-black/20 border border-[#464646] rounded-xl outline-none px-6 py-4 text-lg text-white placeholder-slate-500 focus:border-[#f5ed38] transition-colors"
+                  suppressHydrationWarning
                 />
               </div>
               <button
@@ -175,6 +178,7 @@ export default function Home() {
                   placeholder="Your Name"
                   className="w-full bg-black/40 border border-[#464646] rounded-lg outline-none px-4 py-3 text-white placeholder-slate-500 focus:border-[#f5ed38] transition-colors"
                   required
+                  suppressHydrationWarning
                 />
                 <input
                   type="email"
@@ -183,6 +187,7 @@ export default function Home() {
                   placeholder="Your Email"
                   className="w-full bg-black/40 border border-[#464646] rounded-lg outline-none px-4 py-3 text-white placeholder-slate-500 focus:border-[#f5ed38] transition-colors"
                   required
+                  suppressHydrationWarning
                 />
                 <input
                   type="tel"
@@ -190,6 +195,7 @@ export default function Home() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Your Phone Number (Optional)"
                   className="w-full bg-black/40 border border-[#464646] rounded-lg outline-none px-4 py-3 text-white placeholder-slate-500 focus:border-[#f5ed38] transition-colors"
+                  suppressHydrationWarning
                 />
 
                 <button

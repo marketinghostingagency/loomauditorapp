@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import AuditAccordion from '../../../components/AuditAccordion';
 import PrintButton from './PrintButton';
+import AuditPendingBanner from '../../../components/AuditPendingBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -182,10 +183,10 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
           </div>
         )}
 
-        {audit.aiAnalysis && (
+        {audit.aiAnalysis ? (
           <div className={`${brandObj.bgCard} rounded-2xl p-6 md:p-10 border ${brandObj.borderCard} shadow-xl relative mb-8 print:border-none print:shadow-none print:p-0 print:bg-white print:text-black`}>
             {/* Top Glow bar */}
-            <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${brandObj.bgGlow} rounded-t-2xl print:hidden`}></div>
+            <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${brandObj.bgGlow} rounded-t-2xl print:hidden`} />
             
             <div className="flex flex-col gap-6">
               <div className={`flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6 print:hidden ${isSimplicity ? 'border-slate-200' : 'border-[#464646]/50'}`}>
@@ -195,7 +196,7 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
                   </h2>
                   {audit.metaPixelFound ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-600 border border-green-500/20 shadow-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse" />
                       Meta Pixel Traced
                     </span>
                   ) : (
@@ -210,6 +211,8 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
               <AuditAccordion auditId={audit.id} data={audit.aiAnalysis} rawFallback={audit.aiAnalysis || ''} isEditable={false} themeObj={brandObj} />
             </div>
           </div>
+        ) : (
+          <AuditPendingBanner dark={!isSimplicity} />
         )}
       </main>
       </div>{/* END TABLE ROW GROUP */}

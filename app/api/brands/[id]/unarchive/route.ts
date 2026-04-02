@@ -18,17 +18,17 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     const bucket = storageClient.bucket(GCS_BUCKET_NAME);
 
     for (const asset of brand.assets) {
-       if (asset.status === 'ARCHIVED') continue; 
+       if (asset.status !== 'ARCHIVED') continue; 
        const urlParts = asset.fileUrl.split('/');
        const key = urlParts[urlParts.length - 1];
 
        if (key && !key.includes('pending')) {
           const file = bucket.file(key);
-          await file.setStorageClass('ARCHIVE');
+          await file.setStorageClass('STANDARD'); // Revert back to Standard storage class
           
           await prisma.creativeAsset.update({
              where: { id: asset.id },
-             data: { status: 'ARCHIVED' }
+             data: { status: 'ACTIVE' }
           });
           successCount++;
        }
@@ -36,12 +36,12 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
 
     await prisma.brandBook.update({
        where: { id: params.id },
-       data: { status: 'ARCHIVED' }
+       data: { status: 'ACTIVE' }
     });
 
-    return NextResponse.json({ success: true, message: `Successfully transitioned brand and ${successCount} assets to Google Cloud Archive Storage.` });
+    return NextResponse.json({ success: true, message: `Successfully unarchived brand portfolio and restored ${successCount} assets to active Standard storage.` });
   } catch (error: any) {
-    console.error('Archive Error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to archive brand portfolio' }, { status: 500 });
+    console.error('Unarchive Error:', error);
+    return NextResponse.json({ error: error.message || 'Failed to unarchive brand portfolio' }, { status: 500 });
   }
 }

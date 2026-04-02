@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import AuditAccordion from '../../../../components/AuditAccordion';
 import ClientDashboardActions from './ClientDashboardActions';
 import AdminScriptGenerator from './AdminScriptGenerator';
+import AuditPendingBanner from '../../../../components/AuditPendingBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,9 +161,9 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
           </div>
         )}
 
-        {audit.aiAnalysis && (
+        {audit.aiAnalysis ? (
           <div className="glass-card rounded-2xl p-6 md:p-10 border border-[#464646] shadow-xl relative mb-8">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#dc9f0f] via-[#f5ed38] to-[#dc9f0f] rounded-t-2xl"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#dc9f0f] via-[#f5ed38] to-[#dc9f0f] rounded-t-2xl" />
             
             <div className="flex flex-col gap-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#464646]/50 pb-6">
@@ -172,7 +173,7 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
                   </h2>
                   {audit.metaPixelFound ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 mr-2 animate-pulse"></span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 mr-2 animate-pulse" />
                       Meta Pixel Traced
                     </span>
                   ) : (
@@ -186,6 +187,8 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
               <AuditAccordion auditId={audit.id} data={audit.aiAnalysis} rawFallback={audit.aiAnalysis || ''} isEditable={true} />
             </div>
           </div>
+        ) : (
+          <AuditPendingBanner dark={true} />
         )}
 
         {/* Secure Admin Loop Script Generator Layer */}
