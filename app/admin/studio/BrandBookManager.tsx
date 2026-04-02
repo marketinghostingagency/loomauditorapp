@@ -9,7 +9,8 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
   const [isUploading, setIsUploading] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
-
+  const [aiPrompt, setAiPrompt] = useState<{ [key: string]: string }>({});
+  const [isGenerating, setIsGenerating] = useState<{ [key: string]: boolean }>({});
   const handleCreateBrand = async (e: React.FormEvent) => {
      e.preventDefault();
      if (!newBrandName) return;
@@ -63,6 +64,28 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
         alert('Upload Error: ' + err.message);
      } finally {
         setIsUploading(false);
+     }
+  };
+
+  const handleAiGeneration = async (asset: any, preset: string) => {
+     const prompt = aiPrompt[asset.id];
+     if (!prompt) return alert('Enter a creative instruction first.');
+     
+     setIsGenerating(prev => ({ ...prev, [asset.id]: true }));
+     try {
+        const res = await fetch('/api/vertex/generate', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ fileUrl: asset.fileUrl, prompt, aspectPreset: preset })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        alert(`VEO Job Started! Job Tracker ID / Debug: \n\n${data.analysisPayload}`);
+     } catch(err: any) {
+        console.error(err);
+        alert('Vertex AI Error: ' + err.message);
+     } finally {
+        setIsGenerating(prev => ({ ...prev, [asset.id]: false }));
      }
   };
 
@@ -139,8 +162,16 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
                      disabled={isArchiving}
                      className="bg-[#222] hover:bg-[#333] text-purple-400 px-4 py-2 rounded-lg font-bold border border-[#464646] transition-colors disabled:opacity-50"
                    >
-                     {isArchiving ? 'Archiving...' : '🗄️ Send to Glacier'}
+                     {isArchiving ? 'Archiving...' : '🗄️ Send to Archive'}
                    </button>
+                   <a 
+                     href={`/api/brands/${selectedBrand.id}/export`} 
+                     className="bg-[#222] hover:bg-white hover:text-black text-slate-300 px-4 py-2 rounded-lg font-bold border border-[#464646] transition-colors"
+                     target="_blank" 
+                     rel="noreferrer"
+                   >
+                     ↓ Download Zip
+                   </a>
                    <label className="bg-[#f5ed38]/10 text-[#f5ed38] px-4 py-2 rounded-lg font-bold border border-[#f5ed38]/30 hover:bg-[#f5ed38]/20 transition-colors cursor-pointer disabled:opacity-50">
                      {isUploading ? 'Uploading to GCS...' : '+ New Asset'}
                      <input type="file" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
@@ -162,13 +193,48 @@ export default function BrandBookManager({ initialBrands }: { initialBrands: any
                     <input type="text" placeholder="E.g. Inter, Helvetica" className="w-full bg-transparent border border-[#464646] p-2 rounded-lg text-white outline-none focus:border-purple-400" />
                  </div>
                  <div className="bg-black border border-[#333] p-4 rounded-xl col-span-full border-dashed">
-                    <h4 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-4 flex justify-between">
-                       <span>Asset Library</span>
-                       <span>{selectedBrand.assets?.length || 0} Items</span>
-                    </h4>
-                    <div className="h-40 flex items-center justify-center text-slate-500">
-                       Drop Brand Assets Here (Images / Videos)
-                    </div>
+                     <h4 className="text-slate-400 font-bold uppercase tracking-widest text-xs mb-4 flex justify-between">
+                       <span>Asset Library & VEO Studio</span>
+                       <span>{(selectedBrand.assets || []).filter((a:any) => a.status === 'ACTIVE').length} Active Items</span>
+                     </h4>
+                     <div className="flex flex-col gap-4">
+                        {(selectedBrand.assets || []).filter((a:any) => a.status === 'ACTIVE').map((asset:any) => (
+                           <div key={asset.id} className="border border-[#464646] rounded-xl p-4 bg-[#111] flex flex-col gap-3">
+                              <div className="text-xs text-slate-500 flex justify-between">
+                                 <span className="truncate max-w-[200px]">{asset.fileUrl.split('/').pop()}</span>
+                                 <span className="text-green-400 font-mono">✓ Validated</span>
+                              </div>
+                              
+                              {/* Generative UI */}
+                              <div className="flex gap-2 flex-col mt-2">
+                                 <div className="text-xs text-slate-400 mb-1">Meta Specs Duplicator (VEO):</div>
+                                 <textarea 
+                                   placeholder="Describe changes (e.g. 'Make it 10s shorter, sunset background')..."
+                                   value={aiPrompt[asset.id] || ''}
+                                   onChange={e => setAiPrompt({...aiPrompt, [asset.id]: e.target.value})}
+                                   className="w-full bg-black border border-[#333] rounded-lg p-2 text-sm text-white focus:border-[#f5ed38] outline-none h-16"
+                                 />
+                                 <div className="flex gap-2">
+                                    <button onClick={() => handleAiGeneration(asset, '1:1')} disabled={isGenerating[asset.id]} className="flex-1 bg-[#222] hover:bg-[#f5ed38] hover:text-black border border-[#464646] text-white text-xs font-bold py-2 rounded-lg transition-colors">
+                                       1:1 Feed (1440²)
+                                    </button>
+                                    <button onClick={() => handleAiGeneration(asset, '4:5')} disabled={isGenerating[asset.id]} className="flex-1 bg-[#222] hover:bg-[#f5ed38] hover:text-black border border-[#464646] text-white text-xs font-bold py-2 rounded-lg transition-colors">
+                                       4:5 Feed (1440x1800)
+                                    </button>
+                                    <button onClick={() => handleAiGeneration(asset, '9:16')} disabled={isGenerating[asset.id]} className="flex-1 bg-[#222] hover:bg-[#f5ed38] hover:text-black border border-[#464646] text-white text-xs font-bold py-2 rounded-lg transition-colors">
+                                       9:16 Story (1440x2560)
+                                    </button>
+                                 </div>
+                                 {isGenerating[asset.id] && <div className="text-xs text-[#f5ed38] animate-pulse mt-1">Dispatching to Google Vertex AI... applying Safe Zones (Top 14%, Bottom 20%)...</div>}
+                              </div>
+                           </div>
+                        ))}
+                        {!(selectedBrand.assets || []).length && (
+                           <div className="h-40 flex items-center justify-center text-slate-500">
+                             Select '+ New Asset' to upload videos for Gen AI Processing.
+                           </div>
+                        )}
+                     </div>
                  </div>
                </div>
             </div>

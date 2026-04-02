@@ -12,8 +12,10 @@
     "@ai-sdk/anthropic": "^3.0.58",
     "@anthropic-ai/sdk": "^0.78.0",
     "@google-cloud/storage": "^7.19.0",
+    "@google-cloud/vertexai": "^1.10.4",
     "@prisma/client": "^5.22.0",
     "ai": "^6.0.116",
+    "archiver": "^7.0.1",
     "cheerio": "^1.2.0",
     "dotenv": "^17.3.1",
     "marked": "^17.0.5",
@@ -26,6 +28,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/archiver": "^7.0.0",
     "@types/marked": "^5.0.2",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.11",
