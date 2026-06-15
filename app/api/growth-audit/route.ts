@@ -205,7 +205,7 @@ export async function POST(req: Request) {
             }
 
             async function extractUrlsFromSitemap(sitemapUrl: string, depth: number = 0) {
-               if (depth > 3 || sitemapUrls.size > 5000) return;
+               if (depth > 4 || sitemapUrls.size > 5000) return;
                try {
                   const res = await fetchWithRetry(sitemapUrl);
                   if (!res) return;
@@ -215,7 +215,8 @@ export async function POST(req: Request) {
                   const childSitemaps: string[] = [];
                   while ((match = locRegex.exec(text)) !== null) {
                       const locUrl = match[1].trim();
-                      if (locUrl.endsWith('.xml')) {
+                      const cleanLocUrl = locUrl.split('?')[0];
+                      if (cleanLocUrl.endsWith('.xml')) {
                           childSitemaps.push(locUrl);
                       } else {
                           sitemapUrls.add(locUrl);
@@ -224,19 +225,39 @@ export async function POST(req: Request) {
                   // Process child sitemaps sequentially to avoid hammering the server
                   for (const child of childSitemaps) {
                     await extractUrlsFromSitemap(child, depth + 1);
-                    await new Promise(r => setTimeout(r, 300)); // polite delay between sitemap files
+                    await new Promise(r => setTimeout(r, 200)); // polite delay between sitemap files
                   }
                } catch(e) {}
             }
 
             console.log(`[Sitemap] Starting extraction for ${baseUrl}`);
-            await extractUrlsFromSitemap(`${baseUrl}/sitemap.xml`);
-            await extractUrlsFromSitemap(`${baseUrl}/sitemap_index.xml`);
-            // Also try common alternate sitemap locations
-            if (sitemapUrls.size <= 1) {
-              await extractUrlsFromSitemap(`${baseUrl}/sitemap1.xml`);
-              await extractUrlsFromSitemap(`${baseUrl}/news-sitemap.xml`);
-              await extractUrlsFromSitemap(`${baseUrl}/product-sitemap.xml`);
+            
+            // First check robots.txt for custom sitemap locations
+            let foundInRobots = false;
+            try {
+                const robotsRes = await fetchWithRetry(`${baseUrl}/robots.txt`);
+                if (robotsRes) {
+                    const text = await robotsRes.text();
+                    const sitemapRegex = /Sitemap:\s*(https?:\/\/[^\s]+)/gi;
+                    let match;
+                    while ((match = sitemapRegex.exec(text)) !== null) {
+                        const sUrl = match[1].trim();
+                        console.log(`[Sitemap] Found custom map in robots.txt: ${sUrl}`);
+                        await extractUrlsFromSitemap(sUrl);
+                        foundInRobots = true;
+                    }
+                }
+            } catch { }
+
+            if (!foundInRobots || sitemapUrls.size <= 1) {
+                await extractUrlsFromSitemap(`${baseUrl}/sitemap.xml`);
+                await extractUrlsFromSitemap(`${baseUrl}/sitemap_index.xml`);
+                // Also try common alternate sitemap locations
+                if (sitemapUrls.size <= 1) {
+                  await extractUrlsFromSitemap(`${baseUrl}/sitemap1.xml`);
+                  await extractUrlsFromSitemap(`${baseUrl}/news-sitemap.xml`);
+                  await extractUrlsFromSitemap(`${baseUrl}/product-sitemap.xml`);
+                }
             }
             console.log(`[Sitemap] Found ${sitemapUrls.size} URLs from sitemaps`);
             
@@ -254,7 +275,7 @@ export async function POST(req: Request) {
                 });
             }
 
-            const urlsToCrawl = Array.from(sitemapUrls).slice(0, 500);
+            const urlsToCrawl = Array.from(sitemapUrls).slice(0, 1500);
             console.log(`[Sitemap] Crawling ${urlsToCrawl.length} URLs for meta data...`);
             let csvContent = "URL,Meta Title,Meta Description\n";
             
@@ -306,11 +327,26 @@ export async function POST(req: Request) {
             let seoSnippet = "Top Site Infrastructure Meta Mappings:\n" + crawlResults.slice(0, 10).join('');
 
             // 4. Technical checks
+            const extractPixelId = (htmlSource: string): string | null => {
+               // common fbq regex
+               let match = /fbq\s*\(\s*['"]init['"]\s*,\s*['"](\d+)['"]\s*\)/i.exec(htmlSource);
+               if (match && match[1]) return match[1];
+               // static noscript pixel img regex
+               match = /tr\?id=(\d+)/i.exec(htmlSource);
+               if (match && match[1]) return match[1];
+               // shopify fb pixel logic or fallback config objects
+               match = /"pixelId"\s*:\s*"(\d+)"/i.exec(htmlSource);
+               if (match && match[1]) return match[1];
+               return null;
+            };
+
             const checkPixel = (htmlSource: string) => {
               const lower = htmlSource.toLowerCase();
               return lower.includes('fbq(') || lower.includes('fbevents.js') || lower.includes('googletagmanager.com/gtm.js');
             };
-            const metaPixelFound = checkPixel(homeHtml) || (landingHtml ? checkPixel(landingHtml) : false);
+
+            const metaPixelId = extractPixelId(homeHtml) || (landingHtml ? extractPixelId(landingHtml) : null);
+            const metaPixelFound = metaPixelId ? true : (checkPixel(homeHtml) || (landingHtml ? checkPixel(landingHtml) : false));
 
             // 5. Content Extraction
             let textContent = "";
@@ -398,6 +434,7 @@ export async function POST(req: Request) {
                 where: { id: auditId },
                 data: {
                     metaPixelFound,
+                    metaPixelId,
                     sitemapXml: Buffer.from(csvContent).toString('base64'),
                     affiliatePrograms: JSON.stringify(affiliateProgramsFound),
                     socialLinks: JSON.stringify(socialLinks),

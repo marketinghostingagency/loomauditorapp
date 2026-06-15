@@ -171,7 +171,12 @@ export default async function AuditDetail(props: { params: Promise<{ id: string 
                   <h2 className="text-3xl font-black text-white tracking-tight mb-2">
                     In-Depth <span className="text-[#f5ed38]">Growth Playbook</span>
                   </h2>
-                  {audit.metaPixelFound ? (
+                  {audit.metaPixelId ? (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 mr-2 animate-pulse" />
+                      Meta Pixel: {audit.metaPixelId}
+                    </span>
+                  ) : audit.metaPixelFound ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400 mr-2 animate-pulse" />
                       Meta Pixel Traced

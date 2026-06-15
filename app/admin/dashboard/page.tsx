@@ -24,9 +24,14 @@ export default async function AdminDashboard() {
           <span className="w-2 h-2 rounded-full bg-[#f5ed38] animate-pulse"></span>
           MHA Core <span className="text-[#464646]">/</span> <span className="text-slate-400 font-medium text-lg">Growth Auditor</span>
         </div>
-        <Link href="/admin/studio" className="hover:bg-[#f5ed38] hover:text-black text-[#f5ed38] border border-[#f5ed38]/50 px-4 py-2 rounded-xl text-sm font-bold tracking-tight transition-colors">
-          Launch Creative Studio &rarr;
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/dashboard/internal-audit" className="text-slate-300 hover:text-white text-sm font-medium transition-colors border border-[#464646] px-4 py-2 rounded-xl bg-[#222222] hover:bg-[#333333]">
+            Run Internal Audit
+          </Link>
+          <Link href="/admin/studio" className="hover:bg-[#f5ed38] hover:text-black text-[#f5ed38] border border-[#f5ed38]/50 px-4 py-2 rounded-xl text-sm font-bold tracking-tight transition-colors">
+            Launch Creative Studio &rarr;
+          </Link>
+        </div>
       </nav>
 
       <main className="max-w-6xl mx-auto px-6 py-12">

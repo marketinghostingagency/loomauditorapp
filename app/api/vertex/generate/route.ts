@@ -3,11 +3,15 @@ import { VertexAI } from '@google-cloud/vertexai';
 
 const vertexAI = new VertexAI({
   project: process.env.GOOGLE_CLOUD_PROJECT_ID || '',
-  location: 'us-central1' // Typical default location for Vertex models
+  location: 'us-central1',
+  googleAuthOptions: {
+    credentials: {
+      client_email: process.env.GOOGLE_CLOUD_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_CLOUD_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    }
+  }
 });
 
-// We interface with gemini-default / multimodal or Veo specifically depending on access.
-// For now we use the latest gemini multimodal capable of video tasks, or you can swap to 'veo-1.0'
 const generativeModel = vertexAI.getGenerativeModel({
   model: 'gemini-1.5-pro-preview-0409',
 });

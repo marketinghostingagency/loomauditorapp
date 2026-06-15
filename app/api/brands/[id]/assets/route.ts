@@ -6,11 +6,7 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
     const params = await props.params;
     const brandId = params.id;
     const body = await req.json();
-    const { title, type, fileUrl, classification, isPrimary, tags, dimensions, platform, status } = body;
-
-    if (!fileUrl || !title) {
-      return NextResponse.json({ error: 'fileUrl and title are required' }, { status: 400 });
-    }
+    const { title, type, fileUrl, classification, isPrimary, tags, dimensions, platform, status, folderId, thumbnailUrl } = body;
 
     const asset = await prisma.creativeAsset.create({
       data: {
@@ -18,12 +14,18 @@ export async function POST(req: Request, props: { params: Promise<{ id: string }
         title,
         type: type || 'image',
         fileUrl,
+        thumbnailUrl: thumbnailUrl || null,
         classification,
         isPrimary: isPrimary === true,
         tags: tags ? JSON.stringify(tags) : null,
         dimensions,
         platform,
-        status: status || 'ACTIVE'
+        status: status || 'ACTIVE',
+        folders: folderId ? {
+          create: {
+            folderId
+          }
+        } : undefined
       }
     });
 

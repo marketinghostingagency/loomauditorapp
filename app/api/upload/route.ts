@@ -25,7 +25,8 @@ export async function POST(req: Request) {
     await gcsFile.save(buffer, {
       contentType: file.type,
       resumable: false,
-      public: true, // Make publicly readable
+      // NOTE: public visibility is managed at bucket level via uniform bucket-level access.
+      // Do NOT set public: true here — it throws an ACL error when uniform access is enabled.
     });
 
     const publicUrl = `https://storage.googleapis.com/${GCS_BUCKET_NAME}/${uniqueName}`;

@@ -34,4 +34,4 @@ jobs:
             npm run build
             
             # Reload the background process seamlessly with zero downtime
-            pm2 reload loom-auditor || pm2 start npm --name "loom-auditor" -- start
+            NODE_OPTIONS="--dns-result-order=ipv4first" pm2 reload loom-auditor --update-env || NODE_OPTIONS="--dns-result-order=ipv4first" pm2 start npm --name "loom-auditor" -- start

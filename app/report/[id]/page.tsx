@@ -194,7 +194,12 @@ export default async function SharedAuditDetail(props: { params: Promise<{ id: s
                   <h2 className={`text-3xl font-black tracking-tight mb-2 ${isSimplicity ? 'text-[#07004C]' : 'text-white'}`}>
                     In-Depth <span className={brandObj.primaryGlow}>Growth Playbook</span>
                   </h2>
-                  {audit.metaPixelFound ? (
+                  {audit.metaPixelId ? (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-600 border border-green-500/20 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse" />
+                      Meta Pixel: {audit.metaPixelId}
+                    </span>
+                  ) : audit.metaPixelFound ? (
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-500/10 text-green-600 border border-green-500/20 shadow-sm">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2 animate-pulse" />
                       Meta Pixel Traced

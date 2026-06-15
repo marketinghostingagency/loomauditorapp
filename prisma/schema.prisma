@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -14,11 +14,12 @@ model Audit {
   brandName         String
   apexDomain        String?
   metaPixelFound    Boolean   @default(false)
+  metaPixelId       String?
   script            String?
   sitemapXml        String?
-  affiliatePrograms String? // JSON stringified array representing found programs
+  affiliatePrograms String?
   landingPageUrl    String?
-  socialLinks       String? // JSON stringified array of social profiles
+  socialLinks       String?
   aiAnalysis        String?
   sentAt            DateTime?
   sentTheme         String?
@@ -42,54 +43,192 @@ model StyleRule {
 }
 
 model BrandBook {
-  id               String          @id @default(cuid())
-  brandName        String          @unique
-  website          String?
+  id                String          @id @default(cuid())
+  brandName         String          @unique
+  website           String?
 
   // ── 4 Brand Color Tokens ──────────────────────────────────────────────
-  // These are brand defaults. Per-asset, any can be overridden.
-  brandBackground  String?   // Default asset/page background (e.g. #ffffff)
-  brandHeaderColor String?   // Heading / H1 font color (e.g. #1a1a1a)
-  brandTextColor   String?   // Body paragraph text color (e.g. #555555)
-  brandCtaColor    String?   // CTA button/highlight color (e.g. #f13729)
+  brandBackground   String?
+  brandHeaderColor  String?
+  brandTextColor    String?
+  brandCtaColor     String?
 
-  // ── Legacy extended palette (kept for backwards compat) ───────────────
-  primaryColor     String?
-  secondaryColor   String?
-  accentColor      String?
-  backgroundColor  String?
-  fontColor        String?
-  ctaPrimaryColor  String?
+  // ── Legacy extended palette ───────────────────────────────────────────
+  primaryColor      String?
+  secondaryColor    String?
+  accentColor       String?
+  backgroundColor   String?
+  fontColor         String?
+  ctaPrimaryColor   String?
   ctaSecondaryColor String?
 
   // ── Typography ────────────────────────────────────────────────────────
-  typography       String?   // Primary font family (e.g. "Barlow")
-  fontH1           String?   // H1 style JSON: { family, size, weight, label }
-  fontH2           String?
-  fontBody         String?
+  typography        String?
+  fontH1            String?
+  fontH2            String?
+  fontBody          String?
 
   // ── Identity ──────────────────────────────────────────────────────────
-  logoUrl          String?
-  toneOfVoice      String?
-  status           String          @default("ACTIVE") // ACTIVE or ARCHIVED
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
-  assets           CreativeAsset[]
+  logoUrl           String?
+  toneOfVoice       String?
+  brandVoice        String?
+  brandVoiceDocUrl  String?
+  iconUrls          String?
+  socialLinks       String?
+  status            String          @default("ACTIVE")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  assets            CreativeAsset[]
+  folders           Folder[]
+  projects          Project[]
+
+  clientId          String?
+  client            Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
 }
 
+model Folder {
+  id        String              @id @default(cuid())
+  name      String
+  brandId   String
+  brand     BrandBook           @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Folder?             @relation("SubFolders", fields: [parentId], references: [id])
+  children  Folder[]            @relation("SubFolders")
+  assets    CreativeAssetFolder[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+}
+
+model CreativeAssetFolder {
+  assetId  String
+  folderId String
+  asset    CreativeAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  folder   Folder        @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  @@id([assetId, folderId])
+}
 
 model CreativeAsset {
-  id         String    @id @default(cuid())
-  brandId    String
-  brand      BrandBook @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  title      String
-  type       String // e.g. 'image', 'video', 'template'
-  platform   String? // e.g. 'instagram', 'tiktok', 'facebook'
-  dimensions String? // e.g. '1080x1920'
-  fileUrl    String
+  id             String               @id @default(cuid())
+  brandId        String
+  brand          BrandBook            @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  title          String
+  type           String
+  platform       String?
+  dimensions     String?
+  fileUrl        String
+  thumbnailUrl   String?
   classification String?
-  isPrimary  Boolean   @default(false)
-  tags       String? // JSON stringified array
-  status     String    @default("ACTIVE") // 'ACTIVE' or 'ARCHIVED'
-  createdAt  DateTime  @default(now())
+  isPrimary      Boolean              @default(false)
+  tags           String?
+  status         String               @default("ACTIVE")
+  createdAt      DateTime             @default(now())
+  folders        CreativeAssetFolder[]
+}
+
+// ── Projects (Canva-style) ────────────────────────────────────────────────────
+
+model Project {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  brandId     String
+  brand       BrandBook      @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  coverColor  String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  assets      ProjectAsset[]
+}
+
+model ProjectAsset {
+  id             String         @id @default(cuid())
+  projectId      String
+  project        Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title          String
+  assetType      String
+  platform       String?
+  videoMode      String?
+  aiPrompt       String?
+  specs          String?
+  imageMode      String?
+  youtubeUrl     String?
+  linkedImageIds String?
+  fileUrl        String?
+  thumbnailUrl   String?
+  status         String         @default("DRAFT")
+  notes          String?
+  
+  // Omni-Channel Video Fields
+  aspectRatio    String?
+  platformTarget String[]
+  isMasterAsset  Boolean        @default(false)
+  parentAssetId  String?
+  parentAsset    ProjectAsset?  @relation("AssetHierarchy", fields: [parentAssetId], references: [id], onDelete: SetNull)
+  childAssets    ProjectAsset[] @relation("AssetHierarchy")
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+// ── Revenue Manager Models ───────────────────────────────────────────────────
+
+model Client {
+  id           String        @id @default(cuid())
+  name         String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  brandBooks   BrandBook[]
+  adSpends     AdSpend[]
+  salesRecords SalesRecord[]
+  productSKUs  ProductSKU[]
+}
+
+model AdPlatform {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  adSpends  AdSpend[]
+}
+
+model AdSpend {
+  id          String     @id @default(cuid())
+  date        DateTime
+  spend       Float      @default(0)
+  impressions Int        @default(0)
+  clicks      Int        @default(0)
+  campaignId  String?
+  platformId  String
+  platform    AdPlatform @relation(fields: [platformId], references: [id])
+  geoRegion   String?
+  clientId    String
+  client      Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  
+  @@unique([date, campaignId, platformId, geoRegion, clientId])
+}
+
+model ProductSKU {
+  id           String        @id @default(cuid())
+  sku          String        @unique
+  name         String
+  clientId     String
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  salesRecords SalesRecord[]
+}
+
+model SalesRecord {
+  id            String     @id @default(cuid())
+  date          DateTime
+  revenueAmount Float      @default(0)
+  unitsSold     Int        @default(0)
+  source        String     // e.g. "Shopify", "POS", "Wholesale"
+  skuId         String
+  productSKU    ProductSKU @relation(fields: [skuId], references: [id])
+  geoRegion     String?
+  clientId      String
+  client        Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
+  
+  @@unique([date, source, skuId, geoRegion, clientId])
 }
